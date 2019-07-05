@@ -1,7 +1,7 @@
 #Importando os pacotes que seraoo utilizados
 from stop_words import get_stop_words
 from docx import Document
-import os, os.path, glob, re, unicodedata, time
+import os, os.path, glob, re, unicodedata, time, nltk
 #==============================================================================
 
 
@@ -113,7 +113,8 @@ def normaliza_nome_arquivo(nome_arq):
     return norma_citadora 
 
 
-# Importa arquivos
+# Importa arquivos. Esse codigo deve funcionar em qualquer computador em que a pasta 'Arquivos DOCX - atual - fevereiro.2019'
+# esteja no diretório de trabalho
 def importa_normas():
     #path ='Z:\\GGREG_GERAL\\#GECOR\\Inteligencia Regulatoria\\Normativo Compilado Anvisa - Painel\\Arquivos DOCX - atual - fevereiro.2019'
     path = 'Arquivos DOCX - atual - fevereiro.2019'
@@ -150,10 +151,35 @@ def importa_normas():
     os.chdir('..')
     return resolucoes, nome_arquivos
 
-# Manobra de protecao do WorkDir para evitar dor de cabeca
-def retorna_dir():
-    abspath = os.path.abspath("__file__")
-    dname = os.path.dirname(abspath)
-    os.chdir(dname)
+
+#Faz os stemming nas palavras utilizando o pacote NLTK com o RSLP Portuguese stemmer
+def stem(resolucoes):
+    
+    print('Comecou a fazer o stemming.\n')
+    t = time.time()
+    #Inicializo a lista que será o retorno da funcao
+    res = []
+    
+    #inicializando o objeto stemmer
+    stemmer = nltk.stem.RSLPStemmer()
+    
+    for resolucao in resolucoes:
+        #Faz o stemming para cada palavra na resolucao
+        palavras_stemmed_resolucao = [stemmer.stem(word) for word in resolucao.split()]
+        #Faz o append da resolucao que passou pelo stemming
+        res.append(" ".join(palavras_stemmed_resolucao))
+    
+    print('Tempo para fazer o stemming: ' + str(time.time() - t) + 's \n')
+        
+    return res
+
+
+
+
+
+
+
+
+
 
 #==============================================================================
