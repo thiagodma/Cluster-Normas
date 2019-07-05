@@ -116,12 +116,12 @@ def normaliza_nome_arquivo(nome_arq):
 # Importa arquivos
 def importa_normas():
     #path ='Z:\\GGREG_GERAL\\#GECOR\\Inteligencia Regulatoria\\Normativo Compilado Anvisa - Painel\\Arquivos DOCX - atual - fevereiro.2019'
-    path = r'C:\Users\thiago.almeida\Desktop\Thiago\Clusterizacao_das_normas\Arquivos DOCX - atual - fevereiro.2019'
+    path = 'Arquivos DOCX - atual - fevereiro.2019'
     #path ='C:\\Users\\paulo.gferreira\\Desktop\\Python\\Normas\\Normativos2'
     os.chdir(path)
     
-    # Lista de pastas
-    pastas = [name for name in os.listdir(path)]
+    # Lista de pastas no diretorio atual
+    pastas = [name for name in os.listdir('.')]
     
     arquivos = []
     resolucoes = []
@@ -129,7 +129,7 @@ def importa_normas():
     
     for i in range(0,len(pastas)):
         # Faz o diretorio mudar para a pasta de cada ano
-        os.chdir(path + '\\' + pastas[i])
+        os.chdir(pastas[i])
         # Pega todos os arquivos da pasta
         arquivos = glob.glob('*.docx')
         print('A pasta ' + str(i) + ' tem ' + str(len(arquivos)) + ' arquivos')
@@ -145,7 +145,9 @@ def importa_normas():
             
         elapsed = time.time() - t
         print('Tempo para importar a pasta ' + str(i) + ': ' + str(elapsed) + '\n')
-    os.chdir(r'C:\Users\thiago.almeida\Desktop\Thiago\Clusterizacao_das_normas')
+        os.chdir('..')
+    #volta para o diretorio inicial
+    os.chdir('..')
     return resolucoes, nome_arquivos
 
 # Manobra de protecao do WorkDir para evitar dor de cabeca
