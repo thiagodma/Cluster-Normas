@@ -8,7 +8,7 @@ import cluster_normas_funcoes as cnf
 
 # Controle de tempo
 ti = datetime.now()
-print('Iniciado às: ',ti) 
+print('Iniciado as: ',ti) 
 
 stop_words = [cnf.limpa_utf8(w) for w in cnf.stop_words]
 
