@@ -4,16 +4,18 @@ from datetime import datetime
 import pandas as pd
 import cluster_normas_funcoes as cnf
 
-#TODO: gerar clusters usando PCA e stemmimg
 
 # Controle de tempo
 ti = datetime.now()
-print('Iniciado as: ',ti) 
+print('Iniciado as: ' + str(ti) + '\n') 
 
 stop_words = [cnf.limpa_utf8(w) for w in cnf.stop_words]
 
 # Input de arquivos
 resolucoes, nome_arquivos = cnf.importa_normas()
+
+#Faz o stemming
+resolucoes = cnf.stem(resolucoes)
 
 #Checando o tempo para importar e tratar os textos
 timport = datetime.now()
@@ -21,10 +23,7 @@ print('Tempo para importar e tratar textos: ', timport - ti)
 
 #Vetorizando
 bag_palavras = CountVectorizer().fit_transform(resolucoes)
-del(resolucoes)
 base_tfidf = TfidfTransformer().fit_transform(bag_palavras)
-del(bag_palavras)
-
 
 #Clustering
 base_tfidf = base_tfidf.todense()
