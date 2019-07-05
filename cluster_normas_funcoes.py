@@ -1,4 +1,4 @@
-#Importando os pacotes que serão utilizados
+#Importando os pacotes que seraoo utilizados
 from stop_words import get_stop_words
 from docx import Document
 import os, os.path, glob, re, unicodedata, time
@@ -95,7 +95,7 @@ def normaliza_nome_arquivo(nome_arq):
     acha_digitos = re.match('.+([0-9])[^0-9]*$', nome_arq)
     # Posicao do ultimo digito encontrada
     pos_ultimo_digito = acha_digitos.start(1)
-    # Corta o resto alem do ultimo di�gito
+    # Corta o resto alem do ultimo di­gito
     nome_arq = nome_arq[:pos_ultimo_digito + 1]
     # Separa no split por underline
     nome_arq = nome_arq.split('_')
@@ -103,10 +103,10 @@ def normaliza_nome_arquivo(nome_arq):
     if len(nome_arq) < 3:
         raise ValueError('Nome de arquivo fora de padrao:', n_tratado)
     # Monta nome_arq em norma_citadora no padrao desejado tipo_norma numero_norma/AAAA
-    # Já é aplicado tambem o dicionario tipos_norma ao nome_arq[0], normalizando
+    # JÃ¡ Ã© aplicado tambem o dicionario tipos_norma ao nome_arq[0], normalizando
     # assim o tipo da norma
     numeracao = nome_arq[-2].strip()
-    # Adicionando o '0' às normas que sao numeral unico, como IN 1/2014
+    # Adicionando o '0' Ã s normas que sao numeral unico, como IN 1/2014
     if len(numeracao) == 1: numeracao = '0' + numeracao     
     norma_citadora = tipos_norma[nome_arq[0].strip()] + ' ' + numeracao + '/' + nome_arq[-1]
     # Retorna nome_arq normalizado
@@ -155,5 +155,3 @@ def retorna_dir():
     os.chdir(dname)
 
 #==============================================================================
-
-
