@@ -42,9 +42,6 @@ Y = pd.DataFrame(nome_arquivos,columns=['norma'])
 
 # Matriz clusterização
 Z = X.join(Y)
-
-#Manobra de proteção do WorkDir para evitar dor de cabeça
-#cnf.retorna_dir()
  
 #Exporta as tabelas
 Z.to_csv('cluster_normas_cosseno.csv', sep='|', 
