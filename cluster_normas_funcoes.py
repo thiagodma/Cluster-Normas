@@ -155,6 +155,7 @@ def importa_normas():
 #Faz os stemming nas palavras utilizando o pacote NLTK com o RSLP Portuguese stemmer
 def stem(resolucoes):
     
+    #nltk.download('rslp') so precisa usar isso na primeira da vida que roda o stemming
     print('Comecou a fazer o stemming.\n')
     t = time.time()
     #Inicializo a lista que será o retorno da funcao
