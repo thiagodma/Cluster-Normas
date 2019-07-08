@@ -3,8 +3,7 @@ from scipy.cluster import hierarchy
 from datetime import datetime
 import pandas as pd
 import cluster_normas_funcoes as cnf
-import matplotlib.pyplot as plt
-
+from sklearn.preprocessing import StandardScaler
 
 # Controle de tempo
 ti = datetime.now()
@@ -29,11 +28,12 @@ base_tfidf = TfidfTransformer().fit_transform(bag_palavras)
 #Clustering
 base_tfidf = base_tfidf.todense()
 
-clusters_por_cosseno = hierarchy.linkage(base_tfidf,"average", metric="cosine") #pode testar metric="euclidean" também
+#Primeiramente normalizamos os dados para que tenham media 0 e std 1
+scaler = StandardScaler()
+scaler.fit(base_tfidf)
+base_tfidf_norm = scaler.transform(base_tfidf)
 
-#cria uma figura para analisar o dendograma gerado
-plt.figure()
-dn = hierarchy.dendrogram(clusters_por_cosseno)
+clusters_por_cosseno = hierarchy.linkage(base_tfidf,"average", metric="cosine") #pode testar metric="euclidean" também
 
 # Separa a que Cluster pertence cada texto, pela ordem na lista de textos,
 # dado o parâmetro de limite de dissimilaridade threshold
