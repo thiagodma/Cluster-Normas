@@ -2,6 +2,8 @@
 from stop_words import get_stop_words
 from docx import Document
 import os, os.path, glob, re, unicodedata, time, nltk
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 #==============================================================================
 
 
@@ -155,6 +157,7 @@ def importa_normas():
 #Faz os stemming nas palavras utilizando o pacote NLTK com o RSLP Portuguese stemmer
 def stem(resolucoes):
     
+    #nltk.download('rslp') so precisa usar isso na primeira da vida que roda o stemming no PC
     print('Comecou a fazer o stemming.\n')
     t = time.time()
     #Inicializo a lista que será o retorno da funcao
@@ -173,8 +176,31 @@ def stem(resolucoes):
         
     return res
 
+#Reduz os vetores para duas dimensões para que possamos ver as clusters. Além disso, calcula a distância euclidiana média para a origem
+#o desvio padrão da distância média para a origem e o número de normnas em cada cluster.
+def visualiza_clusters(base_tfidf, id_clusters):
+    
+    clusters = np.unique(id_clusters)
+    
+    #inicializa os outputs da funcao
+    dist_media = np.zeros(len(clusters))
+    std_dist_media = dist_media
+    n_normas = dist_media #numero de normas pertencentes a uma cluster
 
-
+    for i in range(len(clusters)):
+        idxs = np.where(id_clusters == i+1) #a primeira cluster não é a 0 e sim a 1
+        n_normas[i] = len(idxs)
+        X = base_tfidf[idxs[0],:] #seleciona os vetores que pertencem à cluster presente
+        dists = np.sum(X**2,axis=1) #calcula a distância euclidiana de cada vetor à origem
+        dist_media[i] = np.mean(dists)
+        std_dist_media = np.std(dists)
+        
+    #Agora fazendo o PCA para visualizar as clusters
+    pca = PCA(n_components = 2) #quero uma representação bidimensional dos dados 
+    pca.fit(base_tfid)
+    base_tfidf_reduced = pca.transform(base_tfidf)
+        
+    
 
 
 
