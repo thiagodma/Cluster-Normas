@@ -3,8 +3,6 @@ from scipy.cluster import hierarchy
 from datetime import datetime
 import pandas as pd
 import cluster_normas_funcoes as cnf
-import matplotlib.pyplot as plt
-
 
 # Controle de tempo
 ti = datetime.now()
@@ -31,10 +29,6 @@ base_tfidf = base_tfidf.todense()
 
 clusters_por_cosseno = hierarchy.linkage(base_tfidf,"average", metric="cosine") #pode testar metric="euclidean" também
 
-#cria uma figura para analisar o dendograma gerado
-plt.figure()
-dn = hierarchy.dendrogram(clusters_por_cosseno)
-
 # Separa a que Cluster pertence cada texto, pela ordem na lista de textos,
 # dado o parâmetro de limite de dissimilaridade threshold
 limite_dissimilaridade = 0.85
@@ -50,6 +44,8 @@ Z = X.join(Y)
 #Exporta as tabelas
 Z.to_csv('cluster_normas_cosseno.csv', sep='|', 
                     index=False, encoding='utf-8')
+
+print('Foram encontradas ' + str(max(Z['cluster_id'])) + ' clusters\n')
 
 #Printa o tempo total de execução do script
 print('Tempo total: ',datetime.now() - ti)
