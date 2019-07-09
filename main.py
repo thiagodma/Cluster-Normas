@@ -4,8 +4,6 @@ from datetime import datetime
 import pandas as pd
 import cluster_normas_funcoes as cnf
 
-#TODO: gerar clusters usando PCA e stemmimg
-
 # Controle de tempo
 ti = datetime.now()
 print('Iniciado as: ',ti) 
@@ -46,6 +44,8 @@ Z = X.join(Y)
 #Exporta as tabelas
 Z.to_csv('cluster_normas_cosseno.csv', sep='|', 
                     index=False, encoding='utf-8')
+
+print('Foram encontradas ' + str(max(Z['cluster_id'])) + ' clusters\n')
 
 #Printa o tempo total de execução do script
 print('Tempo total: ',datetime.now() - ti)
