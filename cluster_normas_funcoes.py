@@ -2,8 +2,12 @@
 from stop_words import get_stop_words
 from docx import Document
 import os, os.path, glob, re, unicodedata, time, nltk
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
+from sklearn.decomposition import TruncatedSVD
+from sklearn.decomposition import LatentDirichletAllocation
+import numpy as np
+import pandas as pd
+nltk.download('rslp')
+nltk.download('stopwords')
 #==============================================================================
 
 
@@ -13,7 +17,7 @@ tipos_norma = {'PRT':'Portaria', 'RDC':'RDC', 'RES':'RE', 'RE':'RE',
                'IN':'IN', 'INC':'INC', 'PRTC':'PRTC'}
 
 # stop-words provisorio
-stop_words = get_stop_words('portuguese') + ['','art','dou','secao','pag','pagina']
+stop_words = get_stop_words('portuguese') + ['','art','dou','secao','pag','pagina', 'in', 'inc', ]
 
 # Aprimorar romanos
 #romanos_t0 = [' i ','ii','iii',' iv ',' v ',' vi ','vii','viii',' ix ',' x ',
@@ -36,7 +40,8 @@ def limpa_utf8(palavra):
 
     # Usa expressao regular para retornar a palavra apenas com numeros, letras e espaco
     #return re.sub('[^a-zA-Z/ \\\]', '', palavraSemAcento)
-    return re.sub('[^a-zA-Z]', '', palavraSemAcento)
+    palavraSemHifen = re.sub('[-\/]', ' ', palavraSemAcento)
+    return re.sub('[^a-zA-Z ]', '', palavraSemHifen)
 
 
 # Funcao de remocao de algarismos Romanos
@@ -57,10 +62,39 @@ def romanos_lento(palavra_original):
     # Se nao retornou antes, entao as poucas letras estao todas no grupo de romanos, vamos descartar
     return ''
 
+
+def roman2num(roman, values={'m': 1000, 'd': 500, 'c': 100, 'l': 50, 
+                                'x': 10, 'v': 5, 'i': 1}):
+    
+    if (roman == ''): return ''
+    out = re.sub('[^mdclxvi]', '', roman)
+    if (len(out) != len(roman)):
+        return roman
+   
+    numbers = []
+    for char in roman:
+        numbers.append(values[char]) 
+    total = 0
+    if(len(numbers) > 1):
+        for num1, num2 in zip(numbers, numbers[1:]):
+            if num1 >= num2:
+                total += num1
+            else:
+                total -= num1
+        return str(total + num2)
+    else:
+        return str(numbers[0])
+
 # Tratamento principal: prepara o texto para contagem
 def trata_textos(texto_limpo):
     # Remove digitos
     texto_limpo = re.sub("\d", " ", texto_limpo)
+    
+    #Remove hifens e barras
+    texto_limpo = re.sub('[-\/]', ' ', texto_limpo)
+    
+    #Remove espaços extras
+    texto_limpo = re.sub(' +', ' ', texto_limpo)
     
     # Minuscula
     texto_limpo = texto_limpo.lower()
@@ -80,6 +114,9 @@ def trata_textos(texto_limpo):
     
     # retorna o texto simplificado
     texto_limpo = ' '.join(texto_limpo)
+    
+    #Remove espaços extras
+    texto_limpo = re.sub(' +', ' ', texto_limpo)
     
     # Tratamento meio boca para i ii iii
     texto_limpo = re.sub('i+','i', texto_limpo)
@@ -176,35 +213,57 @@ def stem(resolucoes):
         
     return res
 
-#Reduz os vetores para duas dimensões para que possamos ver as clusters. Além disso, calcula a distância euclidiana média para a origem
-#o desvio padrão da distância média para a origem e o número de normnas em cada cluster.
-def visualiza_clusters(base_tfidf, id_clusters):
+#Calcula a distância euclidiana média para a origem,o desvio padrão da distância média 
+#para a origem e o número de normnas em cada cluster.
+def analisa_clusters(base_tfidf, id_clusters):
     
     clusters = np.unique(id_clusters)
     
     #inicializa os outputs da funcao
     dist_media = np.zeros(len(clusters))
-    std_dist_media = dist_media
-    n_normas = dist_media #numero de normas pertencentes a uma cluster
+    std_dist_media = np.zeros(len(clusters))
+    n_normas = np.zeros(len(clusters)) #numero de normas pertencentes a uma cluster
 
     for i in range(len(clusters)):
         idxs = np.where(id_clusters == i+1) #a primeira cluster não é a 0 e sim a 1
-        n_normas[i] = len(idxs)
+        n_normas[i] = len(idxs[0])
         X = base_tfidf[idxs[0],:] #seleciona os vetores que pertencem à cluster presente
-        dists = np.sum(X**2,axis=1) #calcula a distância euclidiana de cada vetor à origem
+        dists = np.sum(np.square(X),axis=1) #calcula a distância euclidiana de cada vetor à origem
         dist_media[i] = np.mean(dists)
-        std_dist_media = np.std(dists)
-        
-    #Agora fazendo o PCA para visualizar as clusters
-    pca = PCA(n_components = 2) #quero uma representação bidimensional dos dados 
-    pca.fit(base_tfid)
-    base_tfidf_reduced = pca.transform(base_tfidf)
-        
+        std_dist_media[i] = np.std(dists)
     
+    A = pd.DataFrame(dist_media,columns=['Dist Media'])
+    B = pd.DataFrame(std_dist_media,columns=['Std Dist Media'])
+    C = pd.DataFrame(n_normas,columns=['N normas'])
+    A = A.join(B)
+    out = A.join(C)
+    
+    return out 
+        
+#Reduz a dimensionalidade dos dados
+def SVD(dim,base_tfidf):
+    svd = TruncatedSVD(n_components=dim)
+    base_tfidf_reduced = svd.fit_transform(base_tfidf)
+    print('Número de dimensoes de entrada: ' + str(base_tfidf.shape[1]))
+    print(str(dim) + ' dimensões explicam ' + str(svd.explained_variance_ratio_.sum()) + ' da variância.\n' )
+    return base_tfidf_reduced
 
+#Cria um objeto da classe LatentDirichletAllocation
+def build_lda(base_tfidf_reduced, num_of_topics=10):
+    lda = LatentDirichletAllocation(n_components=num_of_topics,
+                                    max_iter=15,
+                                    learning_method='online',
+                                    random_state=0)
+    lda.fit(base_tfidf_reduced + 1)
+    return lda
 
-
-
+def display_word_distribution(model,n_word, feature_names):
+    for topic_idx, topic in enumerate(model.components_):
+        print("Topic %d:" % (topic_idx))
+        words = []
+        for i in topic.argsort()[:-n_word - 1:-1]:
+            words.append(feature_names[i])
+        print(words)
 
 
 
