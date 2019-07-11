@@ -6,6 +6,8 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.decomposition import LatentDirichletAllocation
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 nltk.download('rslp')
 nltk.download('stopwords')
 #==============================================================================
@@ -213,32 +215,30 @@ def stem(resolucoes):
         
     return res
 
-#Calcula a distância euclidiana média para a origem,o desvio padrão da distância média 
-#para a origem e o número de normnas em cada cluster.
+#Visualiza as cluster definidas pelo algoritmo. Além disso também retorna o número
+#de normas por cluster
 def analisa_clusters(base_tfidf, id_clusters):
     
     clusters = np.unique(id_clusters)
     
-    #inicializa os outputs da funcao
-    dist_media = np.zeros(len(clusters))
-    std_dist_media = np.zeros(len(clusters))
+    #inicializa o output da funcao
     n_normas = np.zeros(len(clusters)) #numero de normas pertencentes a uma cluster
+    
+    #reduz a dimensionalidade para 2 dimensoes
+    base_tfidf_reduced = SVD(2,base_tfidf)
+    X = base_tfidf_reduced[:,0]
+    Y = base_tfidf_reduced[:,1]
+    
+    colors = cm.rainbow(np.linspace(0, 1, len(n_normas)))
 
-    for i in range(len(clusters)):
-        idxs = np.where(id_clusters == i+1) #a primeira cluster não é a 0 e sim a 1
-        n_normas[i] = len(idxs[0])
-        X = base_tfidf[idxs[0],:] #seleciona os vetores que pertencem à cluster presente
-        dists = np.sum(np.square(X),axis=1) #calcula a distância euclidiana de cada vetor à origem
-        dist_media[i] = np.mean(dists)
-        std_dist_media[i] = np.std(dists)
+    for cluster, color in zip(clusters, colors):
+        idxs = np.where(id_clusters == cluster) #a primeira cluster não é a 0 e sim a 1
+        n_normas[cluster-1] = len(idxs[0])
+        x = X[idxs[0]]
+        y = Y[idxs[0]]
+        plt.scatter(x, y, color=color)
     
-    A = pd.DataFrame(dist_media,columns=['Dist Media'])
-    B = pd.DataFrame(std_dist_media,columns=['Std Dist Media'])
-    C = pd.DataFrame(n_normas,columns=['N normas'])
-    A = A.join(B)
-    out = A.join(C)
-    
-    return out 
+    return n_normas 
         
 #Reduz a dimensionalidade dos dados
 def SVD(dim,base_tfidf):
