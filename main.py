@@ -31,12 +31,12 @@ base_tfidf = TfidfTransformer().fit_transform(bag_palavras)
 base_tfidf = base_tfidf.todense()
 
 #Reduzindo a dimensionalidade
-base_tfidf_reduced = cnf.SVD(500, base_tfidf)
+base_tfidf_reduced = cnf.SVD(600, base_tfidf)
 
 #Clustering
 clusters_por_cosseno = hierarchy.linkage(base_tfidf_reduced,"average", metric="cosine") #pode testar metric="euclidean" também
-plt.figure()
-dn = hierarchy.dendrogram(clusters_por_cosseno)
+#plt.figure()
+#dn = hierarchy.dendrogram(clusters_por_cosseno)
 
 # Separa a que Cluster pertence cada texto, pela ordem na lista de textos,
 # dado o parâmetro de limite de dissimilaridade threshold
