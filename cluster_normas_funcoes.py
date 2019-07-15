@@ -8,10 +8,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-nltk.download('rslp')
-nltk.download('stopwords')
+#nltk.download('rslp')
+#nltk.download('stopwords')
 #==============================================================================
-
 
 #Definindo algumas variaveis que serao uteis
 #Dicionario para normalizacao dos nomes de arquivos
@@ -20,13 +19,6 @@ tipos_norma = {'PRT':'Portaria', 'RDC':'RDC', 'RES':'RE', 'RE':'RE',
 
 # stop-words provisorio
 stop_words = get_stop_words('portuguese') + ['','art','dou','secao','pag','pagina', 'in', 'inc', ]
-
-# Aprimorar romanos
-#romanos_t0 = [' i ','ii','iii',' iv ',' v ',' vi ','vii','viii',' ix ',' x ',
-#           ' xi ','xii','xiii']
-
-base_romanos = ['i','v','x','l','c']
-
 
 #==============================================================================
 
@@ -43,7 +35,7 @@ def limpa_utf8(palavra):
     # Usa expressao regular para retornar a palavra apenas com numeros, letras e espaco
     #return re.sub('[^a-zA-Z/ \\\]', '', palavraSemAcento)
     palavraSemHifen = re.sub('[-\/]', ' ', palavraSemAcento)
-    return re.sub('[^a-zA-Z ]', '', palavraSemHifen)
+    return re.sub('[^a-zA-Z ]', ' ', palavraSemHifen).strip()
 
 
 # Funcao de remocao de algarismos Romanos
@@ -67,6 +59,11 @@ def romanos_lento(palavra_original):
 
 def roman2num(roman, values={'m': 1000, 'd': 500, 'c': 100, 'l': 50, 
                                 'x': 10, 'v': 5, 'i': 1}):
+    roman = limpa_utf8(roman)
+    
+    #como eu vou tirar numeros de qualquer forma, posso simplesmente retornar um numero
+    if(len(roman) < 2 ):
+        return str(1)
     
     if (roman == ''): return ''
     out = re.sub('[^mdclxvi]', '', roman)
@@ -89,11 +86,15 @@ def roman2num(roman, values={'m': 1000, 'd': 500, 'c': 100, 'l': 50,
 
 # Tratamento principal: prepara o texto para contagem
 def trata_textos(texto_limpo):
+    
     # Remove digitos
     texto_limpo = re.sub("\d", " ", texto_limpo)
     
     #Remove hifens e barras
     texto_limpo = re.sub('[-\/]', ' ', texto_limpo)
+    
+    #Troca qualquer tipo de espacamento por espaço
+    texto_limpo = re.sub(r'\s', ' ', texto_limpo)
     
     #Remove espaços extras
     texto_limpo = re.sub(' +', ' ', texto_limpo)
@@ -106,22 +107,19 @@ def trata_textos(texto_limpo):
     #texto_limpo = re.sub(r'([^\s\w]|_)+', '', texto_limpo)
         
     # So a partir daqui o texto vira lista mesmo    
-    texto_limpo = texto_limpo.split(' ')
-    
-    # Vamos atacar os romanos
-    texto_limpo = [romanos_lento(w) for w in texto_limpo]
+    texto_limpo = texto_limpo.split(' ') 
     
     #tira stop-words
-    texto_limpo = [w for w in texto_limpo if w not in stop_words]
+    texto_limpo = [roman2num(w) for w in texto_limpo if w not in stop_words]
     
     # retorna o texto simplificado
     texto_limpo = ' '.join(texto_limpo)
     
+    # Remove digitos que a roman2num colocou de volta
+    texto_limpo = re.sub("\d", " ", texto_limpo)
+    
     #Remove espaços extras
     texto_limpo = re.sub(' +', ' ', texto_limpo)
-    
-    # Tratamento meio boca para i ii iii
-    texto_limpo = re.sub('i+','i', texto_limpo)
     
     return texto_limpo
 
@@ -174,7 +172,7 @@ def importa_normas():
         os.chdir(pastas[i])
         # Pega todos os arquivos da pasta
         arquivos = glob.glob('*.docx')
-        print('A pasta ' + str(i) + ' tem ' + str(len(arquivos)) + ' arquivos')
+        print('\nA pasta ' + str(i) + ' tem ' + str(len(arquivos)) + ' arquivos')
         t = time.time()
         for w in range(0, len(arquivos)):
             doc = Document(arquivos[w])
@@ -216,7 +214,7 @@ def stem(resolucoes):
     return res
 
 #Visualiza as cluster definidas pelo algoritmo. Além disso também retorna o número
-#de normas por cluster
+#de normas por cluster.
 def analisa_clusters(base_tfidf, id_clusters):
     
     clusters = np.unique(id_clusters)
@@ -242,9 +240,9 @@ def analisa_clusters(base_tfidf, id_clusters):
         
 #Reduz a dimensionalidade dos dados
 def SVD(dim,base_tfidf):
-    svd = TruncatedSVD(n_components=dim)
+    svd = TruncatedSVD(n_components = dim, random_state = 42)
     base_tfidf_reduced = svd.fit_transform(base_tfidf)
-    print('Número de dimensoes de entrada: ' + str(base_tfidf.shape[1]))
+    print('\nNúmero de dimensoes de entrada: ' + str(base_tfidf.shape[1]))
     print(str(dim) + ' dimensões explicam ' + str(svd.explained_variance_ratio_.sum()) + ' da variância.\n' )
     return base_tfidf_reduced
 
@@ -257,14 +255,12 @@ def build_lda(base_tfidf_reduced, num_of_topics=10):
     lda.fit(base_tfidf_reduced + 1)
     return lda
 
-def display_word_distribution(model,n_word, feature_names):
+#Você define o número de palavras em cada tópico e a funcao mostra as palavras mais importantes por tópico
+def print_topics(model, vec, n_top_words):
+    words = vec.get_feature_names()
     for topic_idx, topic in enumerate(model.components_):
-        print("Topic %d:" % (topic_idx))
-        words = []
-        for i in topic.argsort()[:-n_word - 1:-1]:
-            words.append(feature_names[i])
-        print(words)
-
-
+        print("\nTopic #%d:" % topic_idx)
+        print(" ".join([words[i]
+                        for i in topic.argsort()[:-n_top_words - 1:-1]]))
 
 #==============================================================================
