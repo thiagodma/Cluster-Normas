@@ -1,3 +1,4 @@
+
 import cluster_normas_funcoes as cnf
 
-x,y = cnf.importa_normas()
+cnf.trata_textos(s,stop_words)
