@@ -1,1 +1,1 @@
-# Esse branch foi criado para avaliar o efeito de stemming+LSA no problema de clusterização das normas da Anvisa
+# Branch criado para melhorar o pré-processamento dos textos. Aqui a clusterização utiliza stemming e SVD (para redução de dimensionalidade)
