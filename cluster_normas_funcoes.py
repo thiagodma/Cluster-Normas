@@ -38,24 +38,6 @@ def limpa_utf8(palavra):
     return re.sub('[^a-zA-Z ]', ' ', palavraSemHifen).strip()
 
 
-# Funcao de remocao de algarismos Romanos
-def romanos_lento(palavra_original):
-    palavra = limpa_utf8(palavra_original)
-    
-    # Nada que tenha um so caracter interessa
-    if len(palavra) < 2: return ''
-    # Se for grande, dificilmente sera um romano
-    if len(palavra) > 5: return palavra
-    
-    # Vamos testar agora se eh um algasrismo romano
-    for letra in palavra:
-        if letra not in base_romanos:
-            # Se alguma letra nao for romano da base de romanos, entao retorna
-            return palavra
-
-    # Se nao retornou antes, entao as poucas letras estao todas no grupo de romanos, vamos descartar
-    return ''
-
 
 def roman2num(roman, values={'m': 1000, 'd': 500, 'c': 100, 'l': 50, 
                                 'x': 10, 'v': 5, 'i': 1}):
