@@ -172,7 +172,7 @@ def normaliza_nome_arquivo(nome_arq):
     numeracao = nome_arq[-2].strip()
     # Adicionando o '0' Ã s normas que sao numeral unico, como IN 1/2014
     if len(numeracao) == 1: numeracao = '0' + numeracao     
-    norma_citadora = tipos_norma[nome_arq[0].strip()] + ' ' + numeracao + '/' + nome_arq[-1]
+    norma_citadora = tipos_norma[nome_arq[0].strip()] + ' ' + numeracao + '_' + nome_arq[-1]
     # Retorna nome_arq normalizado
     return norma_citadora 
 
