@@ -31,6 +31,8 @@ def define_stop_words():
     stop_words = stop_words + ['art','dou','secao','pag','pagina', 'in', 'inc', 'obs', 'sob', 'ltda','ia']
     stop_words = stop_words + ['ndash', 'mdash', 'lsquo','rsquo','ldquo','rdquo','bull','hellip','prime','lsaquo','rsaquo','frasl', 'ordm']
     stop_words = stop_words + ['prezado', 'prezados', 'prezada', 'prezadas', 'gereg', 'ggali','usuario', 'usuaria', 'deseja','gostaria', 'boa tarde', 'bom dia', 'boa noite']
+    stop_words = stop_words + ['rdc','resolucao','portaria','lei','janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']
+    stop_words = stop_words + ['decreto','anvisa','anvs']
     stop_words = list(dict.fromkeys(stop_words))
     stop_words = ' '.join(stop_words)
     #As stop_words vem com acentos/cedilhas. Aqui eu tiro os caracteres indesejados
@@ -115,16 +117,17 @@ def trata_textos(texto, stop_words):
         texto_sem_cabecalho = m.group(2)
     
     #Tira tudo depois do último artigo útil
-    m = re.search(r'(.*)(esta.*vigor)?', texto_sem_cabecalho, re.M)
+    regex = r'(.*)((esta|presente) (instrucao normativa|resolucao|portaria) (conjunta )?((entrara|entra) em vigor|passa a vigorar))'
+    m = re.search(regex, texto_sem_cabecalho)
+    if m==None:
+        regex = r'(.*)((esta|presente) (instrucao normativa|resolucao|portaria) (conjunta )?revoga)'
+        m = re.search(regex, texto_sem_cabecalho)
+    if m==None:
+        m = re.search(r'(.*)(?:\Westa|\Wpresente.*vigor|vigencia|$)', texto_sem_cabecalho)
     texto_artigos = m.group(1)
     
-    #Retira numeros romanos e stopwords
-    texto_artigos = texto_artigos.split()
-    texto_sem_stopwords = [roman2num(palavra,stop_words) for palavra in texto_artigos]
-    texto_sem_stopwords = ' '.join(texto_sem_stopwords)
-    
     #Remove hifens e barras
-    texto_sem_hifens_e_barras = re.sub('[-\/]', ' ', texto_sem_stopwords)
+    texto_sem_hifens_e_barras = re.sub('[-\/]', ' ', texto_artigos)
     
     #Troca qualquer tipo de espacamento por espaço
     texto_sem_espacamentos = re.sub(r'\s', ' ', texto_sem_hifens_e_barras)
@@ -132,6 +135,13 @@ def trata_textos(texto, stop_words):
     #Remove pontuacao e digitos
     texto_limpo = re.sub('[^A-Za-z]', ' ' , texto_sem_espacamentos)
     
+    #Retira numeros romanos e stopwords
+    texto_limpo = texto_limpo.split()
+    texto_sem_stopwords = [roman2num(palavra,stop_words) for palavra in texto_limpo]
+    texto_sem_stopwords = ' '.join(texto_sem_stopwords)
+    
+    #Remove pontuacao e digitos
+    texto_limpo = re.sub('[^A-Za-z]', ' ' , texto_sem_stopwords)
     
     #Remove espaços extras
     texto_limpo = re.sub(' +', ' ', texto_limpo)    
@@ -167,6 +177,28 @@ def normaliza_nome_arquivo(nome_arq):
     return norma_citadora 
 
 
+def corrige_nome_arquivos():
+    
+    path = 'Arquivos DOCX - atual - 31.julho.2019'
+    os.chdir(path)
+    
+    # Lista de pastas no diretorio atual
+    pastas = [name for name in os.listdir('.')]
+    
+    arquivos = []
+    
+    for i in range(len(pastas)):
+        # Faz o diretorio mudar para a pasta de cada ano
+        os.chdir(pastas[i])
+        # Pega todos os arquivos da pasta
+        arquivos = glob.glob('*.docx')
+        path = os.getcwd()
+        for w in range(len(arquivos)):
+            new_name = normaliza_nome_arquivo(arquivos[w][:-5])
+            os.rename(arquivos[w], new_name+'.docx')
+        os.chdir('..')
+    #volta para o diretorio inicial
+    os.chdir('..')
 
 def importa_normas(stop_words):
     '''
@@ -174,7 +206,7 @@ def importa_normas(stop_words):
     esteja no diretório de trabalho
     '''
     
-    path = 'Arquivos DOCX - atual - fevereiro.2019'
+    path = 'Arquivos DOCX - atual - 31.julho.2019'
     os.chdir(path)
     
     # Lista de pastas no diretorio atual
