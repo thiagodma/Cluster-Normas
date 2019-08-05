@@ -20,7 +20,6 @@ tipos_norma = {'PRT':'Portaria', 'RDC':'RDC', 'RES':'RE', 'RE':'RE',
 #==============================================================================
 
 
-
 def define_stop_words():
     '''
     Pega stopwords de diferentes bibliotecas e as trata para ficarem no formato correto
@@ -32,7 +31,8 @@ def define_stop_words():
     stop_words = stop_words + ['ndash', 'mdash', 'lsquo','rsquo','ldquo','rdquo','bull','hellip','prime','lsaquo','rsaquo','frasl', 'ordm']
     stop_words = stop_words + ['prezado', 'prezados', 'prezada', 'prezadas', 'gereg', 'ggali','usuario', 'usuaria', 'deseja','gostaria', 'boa tarde', 'bom dia', 'boa noite']
     stop_words = stop_words + ['rdc','resolucao','portaria','lei','janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']
-    stop_words = stop_words + ['decreto','anvisa','anvs']
+    stop_words = stop_words + ['decreto','anvisa','anvs','diretoria','colegiada','capitulo','item','regulamento','tecnico','nr','instrucao','normativa','anexo']
+    stop_words = stop_words + ['paragrafo', 'unico','devem','caso','boas']
     stop_words = list(dict.fromkeys(stop_words))
     stop_words = ' '.join(stop_words)
     #As stop_words vem com acentos/cedilhas. Aqui eu tiro os caracteres indesejados
@@ -99,35 +99,52 @@ def trata_textos(texto, stop_words):
     
     #converte todos caracteres para letra minúscula
     texto_lower = texto.lower()
-    texto_lower = re.sub(' +', ' ', texto_lower)
+    texto_lower = re.sub(r'\xa0',' ',texto_lower)
+    
+    #encontra a seção de artigos
+    artigos = re.findall(r'\n *art. *\d',texto_lower)
+    
+    if len(artigos) >=2:    
+        #Pega apenas o texto entre o primeiro artigo e o último
+        regex = r'('+artigos[0]+')(.*)('+artigos[-1]+')'
+        regex = re.sub(r'\n',r'\\n',regex)
+        m = re.search(regex, texto_lower, re.DOTALL)
+        texto_so_artigos = m.group(2)
+    else:
+        return 'norma fora de padrão'
     
     #tira sites
-    texto_sem_sites =  re.sub('(http|www)[^ ]+','',texto_lower)
+    texto_sem_sites =  re.sub('(http|www)[^ ]+','',texto_so_artigos)
     
     #Remove acentos e pontuação
     texto_sem_acento_pontuacao = limpa_utf8(texto_sem_sites)
     
+    
+    #==========================================================================
+    '''
     #Tira o cabeçalho da norma
     m = re.search(r'(art.( *)?(1|l)\D)(.*)',texto_sem_acento_pontuacao)
     if m!=None: 
         texto_sem_cabecalho = m.group(4)
     else:
         #se não tiver achado algum artigo primeiro, tenta selecionar algo melhor que o texto todo
-        m = re.search(r'(dispoe|diretor|secretaria|secretario|ministro|objetivo)(.*)',texto_sem_acento_pontuacao)
-        texto_sem_cabecalho = m.group(2)
-    
+       m = re.search(r'(dispoe|diretor|secretaria|secretario|ministro|objetivo)(.*)',texto_sem_acento_pontuacao)
+      texto_sem_cabecalho = m.group(2)
+        
     #Tira tudo depois do último artigo útil
-    regex = r'(.*)((esta|presente) (instrucao normativa|resolucao|portaria) (conjunta )?((entrara|entra) em vigor|passa a vigorar))'
+    regex = r'(.*)((esta|presente) (instrucao normativa|resolucao|portaria|podaria) (conjunta |d[ae] diretoria colegiada |e seu anexo i )?((entrara|entra|entram) em vigor|passa a vigorar))'
     m = re.search(regex, texto_sem_cabecalho)
     if m==None:
-        regex = r'(.*)((esta|presente) (instrucao normativa|resolucao|portaria) (conjunta )?revoga)'
+        regex = r'(.*)((esta|presente) (instrucao normativa|resolucao|portaria|podaria) (conjunta )?revoga)'
         m = re.search(regex, texto_sem_cabecalho)
     if m==None:
         m = re.search(r'(.*)(?:\Westa|\Wpresente.*vigor|vigencia|$)', texto_sem_cabecalho)
     texto_artigos = m.group(1)
+    '''
+    #==========================================================================
     
     #Remove hifens e barras
-    texto_sem_hifens_e_barras = re.sub('[-\/]', ' ', texto_artigos)
+    texto_sem_hifens_e_barras = re.sub('[-\/]', ' ', texto_sem_acento_pontuacao)
     
     #Troca qualquer tipo de espacamento por espaço
     texto_sem_espacamentos = re.sub(r'\s', ' ', texto_sem_hifens_e_barras)
@@ -177,29 +194,6 @@ def normaliza_nome_arquivo(nome_arq):
     return norma_citadora 
 
 
-def corrige_nome_arquivos():
-    
-    path = 'Arquivos DOCX - atual - 31.julho.2019'
-    os.chdir(path)
-    
-    # Lista de pastas no diretorio atual
-    pastas = [name for name in os.listdir('.')]
-    
-    arquivos = []
-    
-    for i in range(len(pastas)):
-        # Faz o diretorio mudar para a pasta de cada ano
-        os.chdir(pastas[i])
-        # Pega todos os arquivos da pasta
-        arquivos = glob.glob('*.docx')
-        path = os.getcwd()
-        for w in range(len(arquivos)):
-            new_name = normaliza_nome_arquivo(arquivos[w][:-5])
-            os.rename(arquivos[w], new_name+'.docx')
-        os.chdir('..')
-    #volta para o diretorio inicial
-    os.chdir('..')
-
 def importa_normas(stop_words):
     '''
     Importa arquivos. Esse código deve funcionar em qualquer computador em que a pasta 'Arquivos DOCX - atual - fevereiro.2019'
@@ -225,15 +219,16 @@ def importa_normas(stop_words):
         print('\nA pasta ' + str(i) + ' tem ' + str(len(arquivos)) + ' arquivos')
         t = time.time()
         for w in range(0, len(arquivos)):
-            doc = Document(arquivos[w])
-            doc.paragraphs
-            texto = [parag.text for parag in doc.paragraphs]
-            texto = '\n'.join(texto)
-            # Substituicoes para desonerar o vetor Start, legado
-            resolucoes.append(texto)
-            resolucoes_tratadas.append(trata_textos(texto, stop_words))
-            nome_arquivos.append(normaliza_nome_arquivo(arquivos[w]))
-            
+            if int(arquivos[w][-9:-5]) >= 1999: #pega apenas as normas de 1999 pra frente
+                doc = Document(arquivos[w])
+                doc.paragraphs
+                texto = [parag.text for parag in doc.paragraphs]
+                texto = '\n'.join(texto)
+                # Substituicoes para desonerar o vetor Start, legado
+                resolucoes.append(texto)
+                resolucoes_tratadas.append(trata_textos(texto, stop_words))
+                nome_arquivos.append(arquivos[w])
+                
         elapsed = time.time() - t
         print('Tempo para importar a pasta ' + str(i) + ': ' + str(elapsed) + '\n')
         os.chdir('..')
@@ -331,16 +326,17 @@ def mostra_conteudo_clusters(cluster,n_amostras,respostas,it_aux):
     fo.close()
     
 
-def generate_wordcloud(cluster,it_aux,stop_words):
+def generate_wordcloud(cluster,stop_words, resolucoes_tratadas):
     '''
-    Gera uma nuvem de palavras de uma cluster 'cluster' referente a uma perunta 'it_aux'.
+    Gera uma nuvem de palavras de uma cluster 'cluster'.
     '''
-    
-    #importa o csv que tem a informação das clusters
-    df = pd.read_csv('texto_respostas_por_cluster.csv', sep='|')
+    df = pd.read_csv('cluster_normas_cosseno.csv',sep='|')
     a = df[df['cluster_id'] == cluster]
     
-    L = list(a.iloc[:,3])
+    L=[]
+    for i in range(a.shape[0]):
+        L.append(resolucoes_tratadas[a.iloc[i,2]])
+    
     text = '\n'.join(L)
     
     
