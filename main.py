@@ -35,9 +35,9 @@ base_tfidf_reduced = cnf.SVD(600, base_tfidf)
 print('Começou a clusterização.')
 t = time.time()
 clusters_por_cosseno = hierarchy.linkage(base_tfidf_reduced,"average", metric="cosine") #pode testar metric="euclidean" também
-#plt.figure()
-#dn = hierarchy.dendrogram(clusters_por_cosseno)
-limite_dissimilaridade = 0.9
+plt.figure()
+dn = hierarchy.dendrogram(clusters_por_cosseno)
+limite_dissimilaridade = 0.92
 id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
 elpsd = time.time() - t
 print('Tempo para fazer a clusterização: ' + str(elpsd) + '\n')
