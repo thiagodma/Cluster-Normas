@@ -32,7 +32,7 @@ def define_stop_words():
     stop_words = stop_words + ['prezado', 'prezados', 'prezada', 'prezadas', 'gereg', 'ggali','usuario', 'usuaria', 'deseja','gostaria', 'boa tarde', 'bom dia', 'boa noite']
     stop_words = stop_words + ['rdc','resolucao','portaria','lei','janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']
     stop_words = stop_words + ['decreto','anvisa','anvs','diretoria','colegiada','capitulo','item','regulamento','tecnico','nr','instrucao','normativa','anexo']
-    stop_words = stop_words + ['paragrafo', 'unico','devem','caso','boas']
+    stop_words = stop_words + ['paragrafo', 'unico','devem','caso','boas','vigilancia','sanitaria','cada']
     stop_words = list(dict.fromkeys(stop_words))
     stop_words = ' '.join(stop_words)
     #As stop_words vem com acentos/cedilhas. Aqui eu tiro os caracteres indesejados
