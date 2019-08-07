@@ -8,13 +8,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import pdb
 #nltk.download('rslp')
 #nltk.download('stopwords')
 #==============================================================================
 
 #Definindo algumas variaveis que serao uteis
 #Dicionario para normalizacao dos nomes de arquivos
-tipos_norma = {'PRT':'Portaria', 'RDC':'RDC', 'RES':'RE', 'RE':'RE', 
+tipos_norma = {'PRT':'Portaria', 'RDC':'RDC', 'RES':'RE', 'RE':'RE',
                'IN':'IN', 'INC':'INC', 'PRTC':'PRTC'}
 
 #==============================================================================
@@ -24,7 +25,7 @@ def define_stop_words():
     '''
     Pega stopwords de diferentes bibliotecas e as trata para ficarem no formato correto
     '''
-    
+
     stop_words = get_stop_words('portuguese')
     stop_words = stop_words + nltk.corpus.stopwords.words('portuguese')
     stop_words = stop_words + ['art','dou','secao','pag','pagina', 'in', 'inc', 'obs', 'sob', 'ltda','ia']
@@ -52,7 +53,7 @@ def limpa_utf8(texto):
         nfkd = unicodedata.normalize('NFKD', palavra)
         palavra_sem_acento = u"".join([c for c in nfkd if not unicodedata.combining(c)])
         texto_tratado.append(palavra_sem_acento)
-            
+
     return ' '.join(texto_tratado)
 
 
@@ -63,11 +64,11 @@ def roman2num(roman, stop_words, values={'m': 1000, 'd': 500, 'c': 100, 'l': 50,
     Converte números romanos em decimais e remove stopwords.
     '''
     roman = limpa_utf8(roman)
-    
+
     #remove stopwords
-    if roman in stop_words: 
+    if roman in stop_words:
         return ''
-      
+
     #como eu vou tirar numeros de qualquer forma, posso simplesmente retornar um numero
     if(len(roman) < 2 ):
         return str(1)
@@ -96,15 +97,15 @@ def trata_textos(texto, stop_words):
     '''
     Trata os textos. Remove stopwords, sites, pontuacao, caracteres especiais etc. texto:str, stop_words:str
     '''
-    
+
     #converte todos caracteres para letra minúscula
     texto_lower = texto.lower()
     texto_lower = re.sub(r'\xa0',' ',texto_lower)
-    
+
     #encontra a seção de artigos
     artigos = re.findall(r'\n *art. *\d',texto_lower)
-    
-    if len(artigos) >=2:    
+
+    if len(artigos) >=2:
         #Pega apenas o texto entre o primeiro artigo e o último
         regex = r'('+artigos[0]+')(.*)('+artigos[-1]+')'
         regex = re.sub(r'\n',r'\\n',regex)
@@ -112,61 +113,37 @@ def trata_textos(texto, stop_words):
         texto_so_artigos = m.group(2)
     else:
         return 'norma fora de padrão'
-    
+
     #tira sites
     texto_sem_sites =  re.sub('(http|www)[^ ]+','',texto_so_artigos)
-    
+
     #Remove acentos e pontuação
     texto_sem_acento_pontuacao = limpa_utf8(texto_sem_sites)
-    
-    
-    #==========================================================================
-    '''
-    #Tira o cabeçalho da norma
-    m = re.search(r'(art.( *)?(1|l)\D)(.*)',texto_sem_acento_pontuacao)
-    if m!=None: 
-        texto_sem_cabecalho = m.group(4)
-    else:
-        #se não tiver achado algum artigo primeiro, tenta selecionar algo melhor que o texto todo
-       m = re.search(r'(dispoe|diretor|secretaria|secretario|ministro|objetivo)(.*)',texto_sem_acento_pontuacao)
-      texto_sem_cabecalho = m.group(2)
-        
-    #Tira tudo depois do último artigo útil
-    regex = r'(.*)((esta|presente) (instrucao normativa|resolucao|portaria|podaria) (conjunta |d[ae] diretoria colegiada |e seu anexo i )?((entrara|entra|entram) em vigor|passa a vigorar))'
-    m = re.search(regex, texto_sem_cabecalho)
-    if m==None:
-        regex = r'(.*)((esta|presente) (instrucao normativa|resolucao|portaria|podaria) (conjunta )?revoga)'
-        m = re.search(regex, texto_sem_cabecalho)
-    if m==None:
-        m = re.search(r'(.*)(?:\Westa|\Wpresente.*vigor|vigencia|$)', texto_sem_cabecalho)
-    texto_artigos = m.group(1)
-    '''
-    #==========================================================================
-    
+
     #Remove hifens e barras
     texto_sem_hifens_e_barras = re.sub('[-\/]', ' ', texto_sem_acento_pontuacao)
-    
+
     #Troca qualquer tipo de espacamento por espaço
     texto_sem_espacamentos = re.sub(r'\s', ' ', texto_sem_hifens_e_barras)
-    
+
     #Remove pontuacao e digitos
     texto_limpo = re.sub('[^A-Za-z]', ' ' , texto_sem_espacamentos)
-    
+
     #Retira numeros romanos e stopwords
     texto_limpo = texto_limpo.split()
     texto_sem_stopwords = [roman2num(palavra,stop_words) for palavra in texto_limpo]
     texto_sem_stopwords = ' '.join(texto_sem_stopwords)
-    
+
     #Remove pontuacao e digitos
     texto_limpo = re.sub('[^A-Za-z]', ' ' , texto_sem_stopwords)
-    
+
     #Remove espaços extras
-    texto_limpo = re.sub(' +', ' ', texto_limpo)    
-    
+    texto_limpo = re.sub(' +', ' ', texto_limpo)
+
     return texto_limpo
 
 
-# Esta funcao serve para transformar o nome do arquivo em um formato 
+# Esta funcao serve para transformar o nome do arquivo em um formato
 # Tipo_norma numero_norma/AAAA (sem separadores de milhar)
 def normaliza_nome_arquivo(nome_arq):
     # Este eh o dicionario para normalizar os nomes de normas
@@ -180,7 +157,7 @@ def normaliza_nome_arquivo(nome_arq):
     nome_arq = nome_arq[:pos_ultimo_digito + 1]
     # Separa no split por underline
     nome_arq = nome_arq.split('_')
-    # Parada de emergencia para nome de arquivos fora do padrao 
+    # Parada de emergencia para nome de arquivos fora do padrao
     if len(nome_arq) < 3:
         raise ValueError('Nome de arquivo fora de padrao:', n_tratado)
     # Monta nome_arq em norma_citadora no padrao desejado tipo_norma numero_norma/AAAA
@@ -188,10 +165,10 @@ def normaliza_nome_arquivo(nome_arq):
     # assim o tipo da norma
     numeracao = nome_arq[-2].strip()
     # Adicionando o '0' Ã s normas que sao numeral unico, como IN 1/2014
-    if len(numeracao) == 1: numeracao = '0' + numeracao     
+    if len(numeracao) == 1: numeracao = '0' + numeracao
     norma_citadora = tipos_norma[nome_arq[0].strip()] + ' ' + numeracao + '_' + nome_arq[-1]
     # Retorna nome_arq normalizado
-    return norma_citadora 
+    return norma_citadora
 
 
 def importa_normas(stop_words):
@@ -199,18 +176,18 @@ def importa_normas(stop_words):
     Importa arquivos. Esse código deve funcionar em qualquer computador em que a pasta 'Arquivos DOCX - atual - fevereiro.2019'
     esteja no diretório de trabalho
     '''
-    
+
     path = 'Arquivos_DOCX_atual_31_julho_2019'
     os.chdir(path)
-    
+
     # Lista de pastas no diretorio atual
     pastas = [name for name in os.listdir('.')]
-    
+
     arquivos = []
     resolucoes_tratadas = []
     resolucoes = []
     nome_arquivos = []
-    
+
     for i in range(0,len(pastas)):
         # Faz o diretorio mudar para a pasta de cada ano
         os.chdir(pastas[i])
@@ -228,7 +205,7 @@ def importa_normas(stop_words):
                 resolucoes.append(texto)
                 resolucoes_tratadas.append(trata_textos(texto, stop_words))
                 nome_arquivos.append(arquivos[w])
-                
+
         elapsed = time.time() - t
         print('Tempo para importar a pasta ' + str(i) + ': ' + str(elapsed) + '\n')
         os.chdir('..')
@@ -239,42 +216,42 @@ def importa_normas(stop_words):
 
 def stem(resolucoes):
     '''
-    Faz o stemming nas palavras utilizando o pacote nltk com o RSLP Portuguese stemmer. 
+    Faz o stemming nas palavras utilizando o pacote nltk com o RSLP Portuguese stemmer.
     '''
-    
+
     print('Comecou a fazer o stemming.')
     t = time.time()
     #Inicializo a lista que será o retorno da funcao
     res = []
-    
+
     #inicializando o objeto stemmer
     stemmer = nltk.stem.RSLPStemmer()
-    
+
     for resolucao in resolucoes:
         #Faz o stemming para cada palavra na resolucao
         palavras_stemmed_resolucao = [stemmer.stem(word) for word in resolucao.split()]
         #Faz o append da resolucao que passou pelo stemming
         res.append(" ".join(palavras_stemmed_resolucao))
-    
+
     print('Tempo para fazer o stemming: ' + str(time.time() - t) + '\n')
-        
+
     return res
 
 def analisa_clusters(base_tfidf, id_clusters):
     '''
     Tenta visualizar as cluster definidas. Além disso retorna o número de normas por cluster.
     '''
-    
+
     clusters = np.unique(id_clusters)
-    
+
     #inicializa o output da funcao
     n_normas = np.zeros(len(clusters)) #numero de normas pertencentes a uma cluster
-    
+
     #reduz a dimensionalidade para 2 dimensoes
     base_tfidf_reduced = SVD(2,base_tfidf)
     X = base_tfidf_reduced[:,0]
     Y = base_tfidf_reduced[:,1]
-    
+
     colors = cm.rainbow(np.linspace(0, 1, len(n_normas)))
 
     for cluster, color in zip(clusters, colors):
@@ -283,16 +260,16 @@ def analisa_clusters(base_tfidf, id_clusters):
         x = X[idxs[0]]
         y = Y[idxs[0]]
         plt.scatter(x, y, color=color)
-    
-    return n_normas 
-        
+
+    return n_normas
+
 def SVD(dim,base_tfidf):
     '''
-    Reduz a dimensionalidade dos dados de entrada. 
+    Reduz a dimensionalidade dos dados de entrada.
     dim: número de dimensões desejada (int)
     base_tfidf: base de dados a ter sua dimensionalidade reduzida
     '''
-    
+
     print('Começou a redução de dimensionalidade.')
     t = time.time()
     svd = TruncatedSVD(n_components = dim, random_state = 42)
@@ -306,25 +283,25 @@ def SVD(dim,base_tfidf):
 
 def mostra_conteudo_clusters(cluster,n_amostras,respostas,it_aux):
     '''
-    Salva 'n_amostras' da cluster 'cluster' em um arquivo txt para facilitar a visualização. 
+    Salva 'n_amostras' da cluster 'cluster' em um arquivo txt para facilitar a visualização.
     '''
     df = pd.read_csv(str(it_aux) + 'texto_respostas_por_cluster.csv', sep='|')
     a = df[df['cluster_id'] == cluster]
-    
+
     if a.shape[0] >= n_amostras: mostra = a.sample(n_amostras,random_state = 42)
     else : mostra = a
-    
+
     fo = open(r'conteudo_cluster'+str(cluster)+'_n_'+str(a.shape[0])+'.txt', 'w+')
-    
+
     for i in range(mostra.shape[0]):
         id_resposta = mostra.iloc[i,1]
         fo.writelines('ID da Resposta: ' + str(id_resposta) + '\n')
         idx = mostra.index[mostra['resposta_id'] == id_resposta].tolist()[0]
         fo.writelines(respostas[idx])
         fo.write('\n\n')
-            
+
     fo.close()
-    
+
 
 def generate_wordcloud(cluster,stop_words, resolucoes_tratadas):
     '''
@@ -332,14 +309,14 @@ def generate_wordcloud(cluster,stop_words, resolucoes_tratadas):
     '''
     df = pd.read_csv('cluster_normas_cosseno.csv',sep='|')
     a = df[df['cluster_id'] == cluster]
-    
+
     L=[]
     for i in range(a.shape[0]):
         L.append(resolucoes_tratadas[a.iloc[i,2]])
-    
+
     text = '\n'.join(L)
-    
-    
+
+
     wordcloud = WordCloud(stopwords=stop_words.split()+['laboratorio','laboratorios','rdc']).generate(text)
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis("off")
