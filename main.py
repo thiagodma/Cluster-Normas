@@ -55,5 +55,5 @@ Z = Z.join(W)
 print('Foram encontradas ' + str(max(Z['cluster_id'])) + ' clusters\n')
 
 #Exporta as tabelas
-Z.to_csv('cluster_normas_cosseno.csv', sep='|', 
+Z.to_csv('cluster_normas_cosseno.csv', sep='|',
                     index=False, encoding='utf-8')
