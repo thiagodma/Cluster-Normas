@@ -200,7 +200,7 @@ def importa_normas(stop_words):
     esteja no diretório de trabalho
     '''
     
-    path = 'Arquivos DOCX - atual - 31.julho.2019'
+    path = 'Arquivos_DOCX_atual_31_julho_2019'
     os.chdir(path)
     
     # Lista de pastas no diretorio atual
