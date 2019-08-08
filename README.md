@@ -4,3 +4,5 @@ Foi finalizada a abordagem clássica para fazer clusterização de texto. Foi fe
 
 Os resultados estão dispostos nos arquivos info_cluster.csv, que contém o código de cada cluster e o número de normas pertencentes a essa cluster, e cluster_normas_cosseno.csv, que contém a referência para a norma e a informação de a qual cluster essa norma pertence.
 
+Neste branch, a implementação foi refeita utilizando agora POO.
+
