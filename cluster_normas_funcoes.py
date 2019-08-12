@@ -26,8 +26,10 @@ class ClusterNormas:
         self.resolucoes_tratadas = []
         self.resolucoes_stem = []
         self.nome_arquivos= []
-
-
+        self.macrotemas = pd.read_csv('Macrotemas_python.csv',sep='|').rename(columns={'Macrotema atual':'Macrotema_atual'}).Macrotema_atual.unique()
+        self.macrotema_por_norma = []
+        self.tabela_macrotemas = pd.read_csv('Macrotemas_python.csv',sep='|').rename(columns={'Macrotema atual':'Macrotema_atual'})
+        self.df_resolucoes_macrotemas = []
 
     def define_stop_words(self):
         '''
@@ -178,6 +180,30 @@ class ClusterNormas:
         # Retorna nome_arq normalizado
         return norma_citadora
 
+    def identifica_macrotema(self,nome_arquivo):
+        '''
+        Identifica a qual macrotema uma norma pertence. Faz isso consultando um csv.
+        '''
+
+        #carrega o dataframe que contém a informação do macrotema de cada norma
+        df = self.tabela_macrotemas
+
+        #Modifica o nome do arquivo para ficar no mesmo padrão do csv
+        nome_arquivo = re.sub('_','/',nome_arquivo[:-5])
+
+        #identifica o indice da norma 'nome_arquivo' no dataframe
+        idx = df[df['Citadora'] == nome_arquivo].index.tolist()
+
+        #Se achou a norma na tabela
+        if len(idx) != 0:
+            macrotema = df['Macrotema_atual'].iloc[idx[0]]
+        else:
+            macrotema = None
+            #import pdb; pdb.set_trace()
+
+        return macrotema
+
+
 
     def importa_normas(self):
         '''
@@ -210,12 +236,26 @@ class ClusterNormas:
                     self.resolucoes.append(texto)
                     self.resolucoes_tratadas.append(self.trata_textos(texto))
                     self.nome_arquivos.append(arquivos[w])
+                    macrotema = self.identifica_macrotema(arquivos[w])
+                    if macrotema != None:
+                        self.macrotema_por_norma.append(macrotema)
 
             elapsed = time.time() - t
             print('Tempo para importar a pasta ' + str(i) + ': ' + str(elapsed) + '\n')
             os.chdir('..')
         #volta para o diretorio inicial
         os.chdir('..')
+
+    def separa_por_macrotema(self,macrotema):
+        '''
+        Separa as normas por macrotema.
+        '''
+
+        #Lê o csv que contém a informação dos macrotemas
+        df = pd.read_csv('Macrotemas_python.csv')
+        df = df.rename(columns={'Macrotema atual':'Macrotema_atual'}) #o espaço no nome da coluna me atrapalha
+
+
 
 
     def stem(self):
@@ -236,10 +276,12 @@ class ClusterNormas:
             #Faz o append da resolucao que passou pelo stemming
             self.resolucoes_stem.append(" ".join(palavras_stemmed_resolucao))
 
+        self.df_resolucoes_macrotemas = pd.DataFrame(list(zip(self.macrotema_por_norma,self.resolucoes_stem)),columns=['macrotema','norma'])
+
         print('Tempo para fazer o stemming: ' + str(time.time() - t) + '\n')
 
 
-    def analisa_clusters(self, base_tfidf, id_clusters):
+    def analisa_clusters(self, base_tfidf, id_clusters, macrotema):
         '''
         Tenta visualizar as cluster definidas. Além disso retorna um dataframe
         que contem a informacao do numero de normas por cluster
@@ -250,24 +292,14 @@ class ClusterNormas:
         #inicializa o output da funcao
         n_normas = np.zeros(len(clusters)) #numero de normas pertencentes a uma cluster
 
-        #reduz a dimensionalidade para 2 dimensoes
-        base_tfidf_reduced = self.SVD(2,base_tfidf)
-        X = base_tfidf_reduced[:,0]
-        Y = base_tfidf_reduced[:,1]
-
-        colors = cm.rainbow(np.linspace(0, 1, len(n_normas)))
-
-        for cluster, color in zip(clusters, colors):
+        for cluster in clusters:
             idxs = np.where(id_clusters == cluster) #a primeira cluster não é a 0 e sim a 1
             n_normas[cluster-1] = len(idxs[0])
-            x = X[idxs[0]]
-            y = Y[idxs[0]]
-            plt.scatter(x, y, color=color)
 
-        n_normas = pd.DataFrame(n_normas, columns=['numero de normas'])
-        cluster_n_normas = pd.DataFrame(clusters,columns=['cluster_id']).join(n_normas)
+        macrotema_list = [macrotema]*len(clusters)
+        macrotema_cluster_nnormas = pd.DataFrame(list(zip(macrotema_list,clusters,n_normas)),columns=['macrotema','cluster_id','n_normas'])
 
-        return cluster_n_normas
+        return macrotema_cluster_nnormas
 
     def SVD(self,dim,base_tfidf):
         '''
