@@ -22,39 +22,46 @@ for resolucao,nome_arquivo in zip(cn.resolucoes_tratadas,cn.nome_arquivos):
 #Faz o stemming e guarda o resultado no atributo resolucoes_stem
 cn.stem()
 
-#Vetorizando e aplicando o tfidf
-vec = CountVectorizer()
-bag_palavras = vec.fit_transform(cn.resolucoes_stem)
-feature_names = vec.get_feature_names()
-base_tfidf = TfidfTransformer().fit_transform(bag_palavras)
-base_tfidf = base_tfidf.todense()
+for macrotema in cn.macrotema_por_norma:
+    #criando uma lista que contém apenas normas do macrotema específico
+    resolucoes_stem_macrotema = list(cn.df_resolucoes_macrotemas[cn.df_resolucoes_macrotemas['macrotema'] == macrotema]['norma'])
 
-#Reduzindo a dimensionalidade
-base_tfidf_reduced = cn.SVD(600, base_tfidf)
+    #Vetorizando e aplicando o tfidf
+    vec = CountVectorizer()
+    bag_palavras = vec.fit_transform(resolucoes_stem_macrotema)
+    feature_names = vec.get_feature_names()
+    base_tfidf = TfidfTransformer().fit_transform(bag_palavras)
+    base_tfidf = base_tfidf.todense()
 
-#Clustering
-print('Começou a clusterização.')
-t = time.time()
-clusters_por_cosseno = hierarchy.linkage(base_tfidf_reduced,"average", metric="cosine") #pode testar metric="euclidean" também
-plt.figure()
-dn = hierarchy.dendrogram(clusters_por_cosseno)
-limite_dissimilaridade = 0.92
-id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
-elpsd = time.time() - t
-print('Tempo para fazer a clusterização: ' + str(elpsd) + '\n')
+    #Reduzindo a dimensionalidade
+    base_tfidf_reduced = cn.SVD(600, base_tfidf)
 
-cluster_n_normas = cn.analisa_clusters(base_tfidf_reduced, id_clusters)
+    #Clustering
+    print('Começou a clusterização.')
+    t = time.time()
+    clusters_por_cosseno = hierarchy.linkage(base_tfidf_reduced,"average", metric="cosine") #pode testar metric="euclidean" também
+    plt.figure()
+    dn = hierarchy.dendrogram(clusters_por_cosseno)
+    plt.savefig('dendogram.jpg')
+    limite_dissimilaridade = 0.92
+    id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
+    elpsd = time.time() - t
+    print('Tempo para fazer a clusterização: ' + str(elpsd) + '\n')
 
-#Colocando em dataframes
-X = pd.DataFrame(id_clusters,columns=['cluster_id'])
-Y = pd.DataFrame(cn.nome_arquivos,columns=['norma'])
-W = pd.DataFrame(list(range(len(cn.resolucoes_tratadas))), columns=['codigo_norma'])
-# Matriz clusterização
-Z = X.join(Y)
-Z = Z.join(W)
+    macrotema_cluster_nnormas = cn.analisa_clusters(base_tfidf_reduced, id_clusters, macrotema)
 
-print('Foram encontradas ' + str(max(Z['cluster_id'])) + ' clusters\n')
+    Z = pd.DataFrame(list(zip(macrotema_list, id_clusters, )))
 
-#Exporta as tabelas
-Z.to_csv('cluster_normas_cosseno.csv', sep='|',
-                    index=False, encoding='utf-8')
+    #Colocando em dataframes
+    X = pd.DataFrame(id_clusters,columns=['cluster_id'])
+    Y = pd.DataFrame(cn.nome_arquivos,columns=['norma'])
+    W = pd.DataFrame(list(range(len(cn.resolucoes_tratadas))), columns=['codigo_norma'])
+    # Matriz clusterização
+    Z = X.join(Y)
+    Z = Z.join(W)
+
+    print('Foram encontradas ' + str(max(Z['cluster_id'])) + ' clusters\n')
+
+    #Exporta as tabelas
+    Z.to_csv('cluster_normas_cosseno.csv', sep='|',
+                        index=False, encoding='utf-8')
