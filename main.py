@@ -8,9 +8,6 @@ import matplotlib.pyplot as plt
 #Aqui eu crio uma instancia da classe ClusterNormas
 cn = ClusterNormas()
 
-#Aqui eu defino as stop words gerais e especificas para esse problema. O atributo stop_words foi definido.
-cn.define_stop_words()
-
 #Aqui eu carrego os atributos resolucoes, resolucoes_tratadas e nome_arquivos.
 cn.importa_normas()
 
@@ -19,22 +16,12 @@ for resolucao,nome_arquivo in zip(cn.resolucoes_tratadas,cn.nome_arquivos):
     if resolucao == 'norma fora de padrão':
         arquivos_fora_padrao.append(nome_arquivo)
 
-#Faz o stemming e guarda o resultado no atributo resolucoes_stem
-cn.stem()
 
 for macrotema in cn.macrotema_por_norma:
     #criando uma lista que contém apenas normas do macrotema específico
     resolucoes_stem_macrotema = list(cn.df_resolucoes_macrotemas[cn.df_resolucoes_macrotemas['macrotema'] == macrotema]['norma'])
 
-    #Vetorizando e aplicando o tfidf
-    vec = CountVectorizer()
-    bag_palavras = vec.fit_transform(resolucoes_stem_macrotema)
-    feature_names = vec.get_feature_names()
-    base_tfidf = TfidfTransformer().fit_transform(bag_palavras)
-    base_tfidf = base_tfidf.todense()
 
-    #Reduzindo a dimensionalidade
-    base_tfidf_reduced = cn.SVD(600, base_tfidf)
 
     #Clustering
     print('Começou a clusterização.')
