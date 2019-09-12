@@ -10,12 +10,12 @@ cn = ClusterNormas()
 
 #Aqui eu carrego os atributos resolucoes, resolucoes_tratadas e nome_arquivos.
 cn.importa_normas()
-
+#import pdb; pdb.set_trace()
+'''
 arquivos_fora_padrao=[]
-for resolucao,nome_arquivo in zip(cn.resolucoes_tratadas,cn.nome_arquivos):
+for resolucao,nome_arquivo in zip(cn.resolucoes,cn.nome_arquivos):
     if resolucao == 'norma fora de padrão':
         arquivos_fora_padrao.append(nome_arquivo)
-
 
 for macrotema in cn.macrotema_por_norma:
     #criando uma lista que contém apenas normas do macrotema específico
@@ -52,3 +52,4 @@ for macrotema in cn.macrotema_por_norma:
     #Exporta as tabelas
     Z.to_csv('cluster_normas_cosseno.csv', sep='|',
                         index=False, encoding='utf-8')
+'''
