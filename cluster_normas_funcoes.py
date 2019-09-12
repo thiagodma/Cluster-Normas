@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import pdb
+import pickle
 #nltk.download('rslp')
 #nltk.download('stopwords')
 
@@ -49,6 +50,20 @@ class ClusterNormas:
 
         return texto_limpo
 
+    def macrotema_norma_ementa(self, id_clusters):
+
+        macrotemas_aux = [macrotema.lower() for macrotema in self.macrotemas]
+        self.macrotemas = list(dict.fromkeys(macrotemas_aux))
+
+        macrotema_por_norma_aux = [macrotema.lower() for macrotema in self.macrotema_por_norma]
+        self.macrotema_por_norma = macrotema_por_norma_aux
+
+        ementas = self.tabela_macrotemas['Assunto/Ementa']
+
+        import pdb; pdb.set_trace()
+
+
+
     def escreve_artigos_em_txt(self):
 
         macrotemas_aux = [macrotema.lower() for macrotema in self.macrotemas]
@@ -71,7 +86,6 @@ class ClusterNormas:
                     fo.close()
             os.chdir('..')
         os.chdir('..')
-
 
     def normaliza_nome_arquivo(self, nome_arq):
         '''Esta funcao serve para padronizar os nomes dos arquivos'''
@@ -161,6 +175,9 @@ class ClusterNormas:
             os.chdir('..')
         #volta para o diretorio inicial
         os.chdir('..')
+        with open('res.txt','wb') as fp: pickle.dump(self.resolucoes,fp)
+        with open('res_nome.txt','wb') as fp: pickle.dump(self.nome_arquivos,fp)
+
 
 
     def analisa_clusters(self, base_tfidf, id_clusters, macrotema):
