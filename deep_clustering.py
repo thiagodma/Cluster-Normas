@@ -4,23 +4,23 @@ from scipy.cluster import hierarchy
 import time
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn import preprocessing
 
 mat = np.load('mat.npy')
 mat = np.delete(mat, (0), axis=0)
+mat = preprocessing.scale(mat)
+
+
 
 #Clustering
-print('Começou a clusterização.')
-t = time.time()
 
 clusters_por_cosseno = hierarchy.linkage(mat,"average", metric="cosine")
 #plt.figure()
 #dn = hierarchy.dendrogram(clusters_por_cosseno)
 #plt.savefig('dendogram.jpg')
 
-limite_dissimilaridade = 0.15
+limite_dissimilaridade = 1
 id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
-elpsd = time.time() - t
-print('Tempo para fazer a clusterização: ' + str(elpsd) + '\n')
 
 #Colocando o resultado em dataframes
 clusters = np.unique(id_clusters)
