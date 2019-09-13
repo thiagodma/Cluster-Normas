@@ -6,20 +6,17 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn import preprocessing
 
-mat = np.load('mat.npy')
-mat = np.delete(mat, (0), axis=0)
-mat = preprocessing.scale(mat)
-
-
+X = np.load('mat.npy')
+X = np.delete(X, (0), axis=0)
+X = preprocessing.scale(X)
 
 #Clustering
+clusters_por_cosseno = hierarchy.linkage(X,"average", metric="cosine")
+plt.figure()
+dn = hierarchy.dendrogram(clusters_por_cosseno)
+plt.savefig('dendogram.jpg')
 
-clusters_por_cosseno = hierarchy.linkage(mat,"average", metric="cosine")
-#plt.figure()
-#dn = hierarchy.dendrogram(clusters_por_cosseno)
-#plt.savefig('dendogram.jpg')
-
-limite_dissimilaridade = 1
+limite_dissimilaridade = 6.5
 id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
 
 #Colocando o resultado em dataframes
@@ -42,3 +39,4 @@ macrotema_norma_ementa = tabela_macrotemas[['Assunto/Ementa','Macrotema_atual','
 
 out = pd.merge(cluster_norma,macrotema_norma_ementa)
 out.to_csv('out.csv',sep='|',index=False,encoding='utf-8')
+'''
