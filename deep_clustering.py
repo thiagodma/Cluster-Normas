@@ -10,13 +10,15 @@ X = np.load('mat.npy')
 X = np.delete(X, (0), axis=0)
 X = preprocessing.scale(X)
 
+with open('res.txt','rb') as fp: texts = pickle.load(fp)
+
 #Clustering
 clusters_por_cosseno = hierarchy.linkage(X,"average", metric="cosine")
-plt.figure()
-dn = hierarchy.dendrogram(clusters_por_cosseno)
-plt.savefig('dendogram.jpg')
+#plt.figure()
+#dn = hierarchy.dendrogram(clusters_por_cosseno)
+#plt.savefig('dendogram.jpg')
 
-limite_dissimilaridade = 6.5
+limite_dissimilaridade = 0.9
 id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
 
 #Colocando o resultado em dataframes
@@ -32,11 +34,10 @@ tabela_macrotemas = pd.read_csv('Macrotemas_python.csv',sep='|').rename(columns=
 
 res_names = list(tabela_macrotemas['Citadora'])
 cluster_nnormas = pd.DataFrame(list(zip(clusters,n_normas)),columns=['cluster_id','n_normas'])
-cluster_norma = pd.DataFrame(list(zip(id_clusters,res_names)), columns=['cluster_id','Citadora'])
+cluster_norma = pd.DataFrame(list(zip(id_clusters,res_names,texts)), columns=['cluster_id','Citadora','Texto_Completo'])
 
 macrotema_norma_ementa = tabela_macrotemas[['Assunto/Ementa','Macrotema_atual','Citadora']]
 
 
 out = pd.merge(cluster_norma,macrotema_norma_ementa)
 out.to_csv('out.csv',sep='|',index=False,encoding='utf-8')
-'''
