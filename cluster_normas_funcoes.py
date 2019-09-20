@@ -178,6 +178,7 @@ class ClusterNormas:
         os.chdir('..')
         with open('res.txt','wb') as fp: pickle.dump(self.resolucoes,fp)
         with open('res_nome.txt','wb') as fp: pickle.dump(self.nome_arquivos,fp)
+        with open('macrotema_por_norma.txt','wb') as fp: pickle.dump(self.macrotema_por_norma,fp)
 
 
 
