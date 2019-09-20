@@ -6,19 +6,20 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn import preprocessing
 
-X = np.load('mat.npy')
-X = np.delete(X, (0), axis=0)
+X = np.load('X.npy')
+#Todas as features com média 0 e desvio padrão 1
 X = preprocessing.scale(X)
 
 with open('res.txt','rb') as fp: texts = pickle.load(fp)
+with open('res_nome.txt','rb') as fp: res_nomes = pickle.load(fp)
+with open('macrotema_por_norma.txt','rb') as fp: macrotemas_por_norma = pickle.load(fp)
 
-tabela_macrotemas = pd.read_csv('Macrotemas_python.csv',sep='|').rename(columns={'Macrotema atual':'Macrotema_atual'})
-import pdb; pdb.set_trace()
+
 #Clustering
 clusters_por_cosseno = hierarchy.linkage(X,"average", metric="cosine")
-#plt.figure()
-#dn = hierarchy.dendrogram(clusters_por_cosseno)
-#plt.savefig('dendogram.jpg')
+plt.figure()
+dn = hierarchy.dendrogram(clusters_por_cosseno)
+plt.savefig('dendogram.jpg')
 
 limite_dissimilaridade = 0.9
 id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
@@ -31,12 +32,5 @@ for cluster in clusters:
     n_normas[cluster-1] = len(idxs[0])
 
 
-res_names = list(tabela_macrotemas['Citadora'])
 cluster_nnormas = pd.DataFrame(list(zip(clusters,n_normas)),columns=['cluster_id','n_normas'])
-cluster_norma = pd.DataFrame(list(zip(id_clusters,res_names,texts)), columns=['cluster_id','Citadora','Texto_Completo'])
-
-macrotema_norma_ementa = tabela_macrotemas[['Assunto/Ementa','Macrotema_atual','Citadora']]
-
-
-out = pd.merge(cluster_norma,macrotema_norma_ementa)
-out.to_csv('out.csv',sep='|',index=False,encoding='utf-8')
+cluster_norma = pd.DataFrame(list(zip(id_clusters,res_nomes,texts)), columns=['cluster_id','Citadora','Texto_Completo'])
