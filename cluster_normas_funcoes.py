@@ -33,9 +33,9 @@ class ClusterNormas:
     def trata_textos(self, texto):
 
         texto = re.sub(r'\xa0',' ',texto)
-
+        #import pdb; pdb.set_trace()
         #encontra a seção de artigos
-        artigos = re.findall(r'\n *Art. *\d',texto)
+        '''artigos = re.findall(r'\n *Art. *\d',texto)
 
         if len(artigos) >=2:
             #Pega apenas o texto entre o primeiro artigo e o último
@@ -47,8 +47,8 @@ class ClusterNormas:
             return 'norma fora de padrão'
 
         texto_limpo = 'Art 1'+texto_so_artigos
-
-        return texto_limpo
+        '''
+        return texto
 
     def macrotema_norma_ementa(self, id_clusters):
 
@@ -72,9 +72,9 @@ class ClusterNormas:
         macrotema_por_norma_aux = [macrotema.lower() for macrotema in self.macrotema_por_norma]
         self.macrotema_por_norma = macrotema_por_norma_aux
 
-        if not os.path.isdir('Data'): os.mkdir('Data')
+        if not os.path.isdir('Data_all'): os.mkdir('Data_all')
 
-        os.chdir('Data')
+        os.chdir('Data_all')
 
         for macrotema in self.macrotemas:
             if not os.path.isdir(macrotema): os.mkdir(macrotema)
@@ -100,6 +100,7 @@ class ClusterNormas:
         # Separa no split por underline
         nome_arq = nome_arq.split('_')
         # Parada de emergencia para nome de arquivos fora do padrao
+        import pdb; pdb.set_trace()
         if len(nome_arq) < 3:
             raise ValueError('Nome de arquivo fora de padrao:', n_tratado)
         # Monta nome_arq em norma_citadora no padrao desejado tipo_norma numero_norma/AAAA
@@ -158,17 +159,17 @@ class ClusterNormas:
             print('\nA pasta ' + str(i) + ' tem ' + str(len(arquivos)) + ' arquivos')
             t = time.time()
             for w in range(0, len(arquivos)):
-                if int(arquivos[w][-9:-5]) >= 1999: #pega apenas as normas de 1999 pra frente
-                    doc = Document(arquivos[w])
-                    doc.paragraphs
-                    texto = [parag.text for parag in doc.paragraphs]
-                    texto = '\n'.join(texto)
-                    # Substituicoes para desonerar o vetor Start, legado
-                    self.resolucoes.append(self.trata_textos(texto))
-                    self.nome_arquivos.append(arquivos[w])
-                    macrotema = self.identifica_macrotema(arquivos[w])
-                    if macrotema != None:
-                        self.macrotema_por_norma.append(macrotema)
+                #if int(arquivos[w][-9:-5]) >= 1999: #pega apenas as normas de 1999 pra frente
+                doc = Document(arquivos[w])
+                doc.paragraphs
+                texto = [parag.text for parag in doc.paragraphs]
+                texto = '\n'.join(texto)
+                # Substituicoes para desonerar o vetor Start, legado
+                self.resolucoes.append(self.trata_textos(texto))
+                self.nome_arquivos.append(arquivos[w])
+                macrotema = self.identifica_macrotema(arquivos[w])
+                if macrotema != None:
+                    self.macrotema_por_norma.append(macrotema)
 
             elapsed = time.time() - t
             print('Tempo para importar a pasta ' + str(i) + ': ' + str(elapsed) + '\n')
