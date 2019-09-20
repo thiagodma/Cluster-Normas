@@ -12,6 +12,8 @@ X = preprocessing.scale(X)
 
 with open('res.txt','rb') as fp: texts = pickle.load(fp)
 
+tabela_macrotemas = pd.read_csv('Macrotemas_python.csv',sep='|').rename(columns={'Macrotema atual':'Macrotema_atual'})
+import pdb; pdb.set_trace()
 #Clustering
 clusters_por_cosseno = hierarchy.linkage(X,"average", metric="cosine")
 #plt.figure()
@@ -27,9 +29,6 @@ n_normas = np.zeros(len(clusters)) #numero de normas pertencentes a uma cluster
 for cluster in clusters:
     idxs = np.where(id_clusters == cluster) #a primeira cluster não é a 0 e sim a 1
     n_normas[cluster-1] = len(idxs[0])
-
-
-tabela_macrotemas = pd.read_csv('Macrotemas_python.csv',sep='|').rename(columns={'Macrotema atual':'Macrotema_atual'})
 
 
 res_names = list(tabela_macrotemas['Citadora'])
