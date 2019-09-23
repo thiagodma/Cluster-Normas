@@ -150,6 +150,7 @@ class ClusterNormas:
         pastas = [name for name in os.listdir('.')]
 
         arquivos = []
+        ementa = []
 
         for i in range(0,len(pastas)):
             # Faz o diretorio mudar para a pasta de cada ano
@@ -168,6 +169,8 @@ class ClusterNormas:
                 self.resolucoes.append(self.trata_textos(texto))
                 self.nome_arquivos.append(arquivos[w])
                 macrotema = self.identifica_macrotema(arquivos[w])
+                import pdb; pdb.set_trace()
+                ementa.append(self.tabela_macrotemas[self.tabela_macrotemas['Citadora'] == arquivos[w][:-5]]['Assunto/Ementa'])
                 if macrotema != None:
                     self.macrotema_por_norma.append(macrotema)
 
