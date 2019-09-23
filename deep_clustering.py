@@ -6,9 +6,17 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn import preprocessing
 
-X = np.load('X.npy')
+X = np.load('X_LM.npy')
+
 #Todas as features com média 0 e desvio padrão 1
 X = preprocessing.scale(X)
+
+#Importa o vetor de importância das features
+fi = np.load('fi.npy')
+
+#Incorpora a importância das features
+for i in range(X.shape[1]):
+    X[:,i] = X[:,i]/fi[i]
 
 with open('res.txt','rb') as fp: texts = pickle.load(fp)
 with open('res_nome.txt','rb') as fp: res_nomes = pickle.load(fp)
@@ -17,9 +25,9 @@ with open('macrotema_por_norma.txt','rb') as fp: macrotemas_por_norma = pickle.l
 
 #Clustering
 clusters_por_cosseno = hierarchy.linkage(X,"average", metric="cosine")
-plt.figure()
-dn = hierarchy.dendrogram(clusters_por_cosseno)
-plt.savefig('dendogram.jpg')
+#plt.figure()
+#dn = hierarchy.dendrogram(clusters_por_cosseno)
+#plt.savefig('dendogram.jpg')
 
 limite_dissimilaridade = 0.9
 id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
@@ -33,4 +41,4 @@ for cluster in clusters:
 
 
 cluster_nnormas = pd.DataFrame(list(zip(clusters,n_normas)),columns=['cluster_id','n_normas'])
-cluster_norma = pd.DataFrame(list(zip(id_clusters,res_nomes,texts)), columns=['cluster_id','Citadora','Texto_Completo'])
+cluster_norma = pd.DataFrame(list(zip(id_clusters,res_nomes,texts,macrotemas_por_norma)), columns=['cluster_id','Citadora','Texto_Completo','Macrotema'])
