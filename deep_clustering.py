@@ -16,20 +16,18 @@ fi = np.load('fi.npy')
 
 #Incorpora a importância das features
 for i in range(X.shape[1]):
-    X[:,i] = X[:,i]/fi[i]
+    X[:,i] = X[:,i]*fi[i]
 
-with open('res.txt','rb') as fp: texts = pickle.load(fp)
-with open('res_nome.txt','rb') as fp: res_nomes = pickle.load(fp)
-with open('macrotema_por_norma.txt','rb') as fp: macrotemas_por_norma = pickle.load(fp)
 
+data = pd.read_csv('Data.csv',sep='|',encoding='utf-8')
 
 #Clustering
 clusters_por_cosseno = hierarchy.linkage(X,"average", metric="cosine")
-#plt.figure()
-#dn = hierarchy.dendrogram(clusters_por_cosseno)
-#plt.savefig('dendogram.jpg')
-
-limite_dissimilaridade = 0.9
+plt.figure()
+dn = hierarchy.dendrogram(clusters_por_cosseno)
+plt.savefig('dendogram.jpg')
+'''
+limite_dissimilaridade = 0.5
 id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
 
 #Colocando o resultado em dataframes
@@ -41,4 +39,7 @@ for cluster in clusters:
 
 
 cluster_nnormas = pd.DataFrame(list(zip(clusters,n_normas)),columns=['cluster_id','n_normas'])
-cluster_norma = pd.DataFrame(list(zip(id_clusters,res_nomes,texts,macrotemas_por_norma)), columns=['cluster_id','Citadora','Texto_Completo','Macrotema'])
+
+id_clusters = pd.DataFrame(id_clusters,columns=['cluster_id'])
+data = data.join(id_clusters)
+'''
