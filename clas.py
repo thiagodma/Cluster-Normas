@@ -10,10 +10,9 @@ from sklearn.model_selection import train_test_split
 
 X = np.load('X_LM.npy')
 X = preprocessing.scale(X)
-with open("macrotema_por_norma.txt", "rb") as fp:
-    macrotema_por_norma = pickle.load(fp)
+data = pd.read_csv('Data.csv',sep='|',encoding='utf-8')
+macrotema_por_norma = list(data['macrotemas'])
 
-macrotema_por_norma = [m.lower() for m in macrotema_por_norma]
 macrotemas = list(dict.fromkeys(macrotema_por_norma))
 
 di = dict.fromkeys(macrotema_por_norma)
@@ -25,15 +24,12 @@ for macrotema in macrotemas:
 y = np.zeros(len(macrotema_por_norma))
 i=0
 for m in macrotema_por_norma:
-    #import pdb; pdb.set_trace()
     y[i] = di[m]
-    #import pdb; pdb.set_trace()
     i+=1
 
-#import pdb; pdb.set_trace()
 X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=42)
 
-clf = RandomForestClassifier(n_estimators=200,max_depth=20)
+clf = RandomForestClassifier(n_estimators=200,max_depth=200, random_state=42)
 clf.fit(X_train,y_train)
 print(clf.score(X_valid,y_valid))
 fi = clf.feature_importances_
