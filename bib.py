@@ -16,7 +16,8 @@ class Data():
         self.nomes_normas = []
         self.ementas = []
         self.tipos_norma = {'PRT':'Portaria', 'RDC':'RDC', 'RES':'RE', 'RE':'RE',
-                       'IN':'IN', 'INC':'INC', 'PRTC':'PRTC'}
+                       'IN':'IN', 'INC':'INC', 'PRTC':'PRTC', 'PRT_SNVS':'Portaria',
+                       'PRT_SVS':'Portaria','PRT_MS':'Portaria'}
 
     def import_data(self):
 
@@ -84,3 +85,25 @@ class Data():
             if len(numeration) == 1: numeration = '0' + numeration
             out = self.tipos_norma[filename[0].strip()] + ' ' + numeration + '_' + filename[-1]
             os.rename(raw_file,out+'.docx')
+
+    def normalize_file_names_v2(self):
+
+        path = 'Normas_novas_23set (atual)'
+        files = []
+        for r, d, f in os.walk(path):
+            for file in f:
+                files.append(file)
+
+        os.chdir(path)
+        for filename in files:
+            m = re.match(r'(\w+)_(\d+)_(\d+)',filename)
+            if m is not None:
+                kind = m.group(1)
+                if '_' in kind: kind = kind.split('_')[0]
+                kind = self.tipos_norma[kind]
+                numb = m.group(2)
+                if len(numb)==1: numb = '0'+numb
+                year = m.group(3)
+                new_filename = kind + ' ' + numb + '_' + year + '.docx'
+                os.rename(filename,new_filename)
+        os.chdir('..')
