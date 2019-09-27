@@ -43,50 +43,24 @@ class Data():
 
         if not os.path.isdir('Data'): os.mkdir('Data')
         os.chdir('Data')
-
+        i=0
         for unique_macrotema in unique_macrotemas:
             if not os.path.isdir(unique_macrotema): os.mkdir(unique_macrotema)
             os.chdir(unique_macrotema)
             for i in range(len(self.textos)):
                 if self.macrotemas[i] == unique_macrotema:
-                    fo = open(self.nomes_normas[i][:-5]  + '.txt', 'w+')
+                    fo = open(self.nomes_normas[i] + '.txt', 'w+')
                     fo.writelines(self.textos[i])
                     fo.close()
+                    i+=1
             os.chdir('..')
         os.chdir('..')
         data_csv = pd.DataFrame(list(zip(self.nomes_normas,self.macrotemas,self.ementas,self.textos)),
         columns=['nomes_normas','macrotemas','ementas','textos'])
         data_csv.to_csv('Data.csv',sep='|',index=False,encoding='utf-8')
+        print(i)
 
     def normalize_file_names(self):
-
-        path = 'Normas_novas_23set (atual)'
-        files = []
-        for r, d, f in os.walk(path):
-            for file in f:
-                files.append(file)
-
-        os.chdir(path)
-        for filename in files:
-            raw_file = filename
-            # Procura o ultimo digito do nome do arquivo
-            find_digits = re.match('.+([0-9])[^0-9]*$', filename)
-            # Posicao do ultimo digito encontrada
-            pos_last_digit = find_digits.start(1)
-            # Corta o resto alem do ultimo di­gito
-            filename = filename[:pos_last_digit + 1]
-            # Separa no split por underline
-            filename = filename.split('_')
-            # Monta nome_arq em norma_citadora no padrao desejado tipo_norma numero_norma/AAAA
-            # JÃ¡ Ã© aplicado tambem o dicionario tipos_norma ao nome_arq[0], normalizando
-            # assim o tipo da norma
-            numeration = filename[-2].strip()
-            # Adicionando o '0' Ã s normas que sao numeral unico, como IN 1/2014
-            if len(numeration) == 1: numeration = '0' + numeration
-            out = self.tipos_norma[filename[0].strip()] + ' ' + numeration + '_' + filename[-1]
-            os.rename(raw_file,out+'.docx')
-
-    def normalize_file_names_v2(self):
 
         path = 'Normas_novas_23set (atual)'
         files = []
