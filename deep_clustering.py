@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn import preprocessing
 
-X = np.load('X_LM.npy')
+X = np.load('X_clas.npy')
 
 #Todas as features com média 0 e desvio padrão 1
 X = preprocessing.scale(X)
@@ -19,35 +19,38 @@ for i in range(X.shape[1]):
     X[:,i] = X[:,i]*fi[i]
 
 
-data = pd.read_csv('Data_cluster.csv',sep='|',encoding='utf-8')
+data = pd.read_csv('Data_cluster.csv',sep='|',encoding='utf-8',index_col=False)
 
 macrotemas = list(data['macrotemas'])
 unique_macrotemas = list(dict.fromkeys(macrotemas))
 
 for unique_macrotema in unique_macrotemas:
 
-    idx = data['macrotemas']=='medicamentos'
+    unique_macrotema='medicamentos'
+    idx = data['macrotemas']==unique_macrotema
     X_macrotema = X[idx]
     #Clustering
-    clusters_por_cosseno = hierarchy.linkage(X,"average", metric="cosine")
-    plt.figure()
-    dn = hierarchy.dendrogram(clusters_por_cosseno)
-    plt.savefig('dendogram.jpg')
-    '''
-    limite_dissimilaridade = 0.5
+    clusters_por_cosseno = hierarchy.linkage(X_macrotema,"average", metric="cosine")
+    #plt.figure()
+    #dn = hierarchy.dendrogram(clusters_por_cosseno)
+    #plt.savefig('dendogram.jpg')
+
+    limite_dissimilaridade = 0.6
     id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
 
     #Colocando o resultado em dataframes
     clusters = np.unique(id_clusters)
     n_normas = np.zeros(len(clusters)) #numero de normas pertencentes a uma cluster
     for cluster in clusters:
-        idxs = np.where(id_clusters == cluster) #a primeira cluster não é a 0 e sim a 1
+        idxs = np.where(id_clusters == cluster)
         n_normas[cluster-1] = len(idxs[0])
 
 
     cluster_nnormas = pd.DataFrame(list(zip(clusters,n_normas)),columns=['cluster_id','n_normas'])
 
     id_clusters = pd.DataFrame(id_clusters,columns=['cluster_id'])
+    data = data[data['macrotemas']==unique_macrotema].reset_index()
+    del data['index']
     data = data.join(id_clusters)
-    '''
+    
     break
