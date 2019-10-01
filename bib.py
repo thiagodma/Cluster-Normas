@@ -81,3 +81,28 @@ class Data():
                 new_filename = kind + ' ' + numb + '_' + year + '.docx'
                 os.rename(filename,new_filename)
         os.chdir('..')
+
+    def clean_text(self, text):
+
+        #finds the articles section
+        articles = re.findall(r'\n *Art. *\d',text)
+
+        if len(articles) >=2:
+            #Gets the text between the first and last articles
+            regex = r'('+articles[0]+')(.*)('+articles[-1]+')'
+            regex = re.sub(r'\n',r'\\n',regex)
+            m = re.search(regex, text, re.DOTALL)
+            text_articles = m.group(2)
+        else:
+            return 'norma fora de padrão'
+
+        return 'Art 1' + text_articles
+
+    def get_arts(self):
+
+        df = pd.read_csv('Data_cluster.csv', sep='|', encoding='utf-8')
+        texts = list(df['textos'])
+        for i in range(df.shape[0]):
+            df.iloc[i,3] = self.clean_text(df.iloc[i,3])
+
+        df.to_csv('Data_cluster_articles.csv',sep='|',encoding='utf-8',index=False)
