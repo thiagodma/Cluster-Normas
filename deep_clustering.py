@@ -29,11 +29,12 @@ for unique_macrotema in unique_macrotemas:
     idx = data['macrotemas']==unique_macrotema
     X_macrotema = X[idx]
     #Clustering
-    clusters_por_cosseno = hierarchy.linkage(X_macrotema,"average", metric="cosine")
+    clusters_por_cosseno = hierarchy.linkage(X_macrotema,"average", metric="cosine",optimal_ordering=True)
     #plt.figure()
     #dn = hierarchy.dendrogram(clusters_por_cosseno)
     #plt.savefig('dendogram.jpg')
-    limite_dissimilaridade = 0.7
+    #break
+    limite_dissimilaridade = 0.75
     id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
 
     #Colocando o resultado em dataframes
