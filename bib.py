@@ -98,11 +98,42 @@ class Data():
 
         return 'Art 1' + text_articles
 
-    def get_arts(self):
+    def clean_text_v2(self, text):
+
+        #finds the articles section
+        articles = re.findall(r'\n *Art. *\d',text)
+
+        if len(articles) >=2:
+            #Gets the text between the first and last articles
+            regex = r'('+articles[0]+')(.*)('+articles[-1]+')'
+            regex = re.sub(r'\n',r'\\n',regex)
+            m = re.search(regex, text, re.DOTALL)
+            text_articles = m.group(2)
+        else:
+            return 'norma fora de padrão'
+
+        #takes out Art. structure
+        without_art_tags = re.sub(r'Art.?\s?\d\w-?\s?º','',text_articles)
+
+        #takes out '§ \dº' structure
+        without_par = re.sub(r'§\s\dº?\s?','',without_art_tags)
+
+        #takes out the 'IV -' structure
+        without_rom = re.sub(r'I{1,3}|IV|V|VI{1,3}|IX|X|XI{1,3}','',without_par)
+
+        #takes out double spaces
+        without_trash = re.sub(r' +',r' ',without_rom)
+
+        #takes out double line breaks
+        final = re.sub(r'\\n+','\\n',without_trash)
+
+        return final
+
+    def get_arts(self, filename:str):
 
         df = pd.read_csv('Data_cluster.csv', sep='|', encoding='utf-8')
         texts = list(df['textos'])
         for i in range(df.shape[0]):
-            df.iloc[i,3] = self.clean_text(df.iloc[i,3])
+            df.iloc[i,3] = self.clean_text_v2(df.iloc[i,3])
 
-        df.to_csv('Data_cluster_articles.csv',sep='|',encoding='utf-8',index=False)
+        df.to_csv(filename,sep='|',encoding='utf-8',index=False)
