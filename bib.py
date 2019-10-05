@@ -3,6 +3,7 @@ import numpy as np
 import os
 import re
 from docx import Document
+import unicodedata
 
 class Data():
 
@@ -100,33 +101,55 @@ class Data():
 
     def clean_text_v2(self, text):
 
-        #finds the articles section
-        articles = re.findall(r'\n *Art. *\d',text)
+        clean_text = []
+        for par in text.split('\n'):
+            clean_par = []
+            for word in par.split():
+                clean_word = unicodedata.normalize('NFKD', word)
+                clean_par.append(clean_word)
+            clean_text.append(' '.join(clean_par))
+        clean_text = '\n'.join(clean_text)
 
+        #finds the articles section
+        #articles = re.findall(r'\n *Art. *\d',clean_text)
+        '''
         if len(articles) >=2:
             #Gets the text between the first and last articles
             regex = r'('+articles[0]+')(.*)('+articles[-1]+')'
             regex = re.sub(r'\n',r'\\n',regex)
-            m = re.search(regex, text, re.DOTALL)
+            m = re.search(regex, clean_text, re.DOTALL)
             text_articles = m.group(2)
         else:
-            return 'norma fora de padrão'
+        '''
+        #m = re.search(r'(.*)',clean_text, re.DOTALL)
+        without_bye = re.split('entra(rá)? em (V|v)igor na data de sua publicação',clean_text)[0]
+        only_important = re.split(r'RESOLVE|resolve|Resolve',without_bye)
+        if len(only_important)>1: only_important = only_important[1]
+        else: only_important = only_important[0]
 
+        #import pdb; pdb.set_trace()
         #takes out Art. structure
-        without_art_tags = re.sub(r'Art.?\s?\d\w-?\s?º','',text_articles)
+        #if type(only_important) is not str: import pdb; pdb.set_trace()
+        #without_art_tags = re.sub(r'Art\.?\s?\d\w-?\s?º?','',only_important)
 
         #takes out '§ \dº' structure
-        without_par = re.sub(r'§\s\dº?\s?','',without_art_tags)
+        #without_par = re.sub(r'§\s\dº?\s?','',without_art_tags)
 
         #takes out the 'IV -' structure
-        without_rom = re.sub(r'I{1,3}|IV|V|VI{1,3}|IX|X|XI{1,3}','',without_par)
+        #without_rom = re.sub(r'\nI{1,3}|\nIV|\nV|\nVI{1,3}|\nIX|\nX|\nXI{1,3}','',without_par)
+
+        #takes out more items structure
+        #without_items = re.sub(r'(\d\.)+','',without_rom)
+
+        #takes out more items structure
+        #without_items2 = re.sub(r'\n\w\)','',without_items)
 
         #takes out double spaces
-        without_trash = re.sub(r' +',r' ',without_rom)
+        without_trash = re.sub(r' +',r' ',only_important)
 
         #takes out double line breaks
         final = re.sub(r'\\n+','\\n',without_trash)
-
+        #import pdb; pdb.set_trace()
         return final
 
     def get_arts(self, filename:str):
