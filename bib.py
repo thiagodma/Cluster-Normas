@@ -127,28 +127,46 @@ class Data():
         if len(only_important)>1: only_important = only_important[1]
         else: only_important = only_important[0]
 
+        #finds the articles section
+        articles = re.findall(r'\n *Art. *\d',only_important)
+        if len(articles)>=2:
+            articles = re.sub(r'\.','\.',articles[0])
+            only_important_articles = re.split(articles,only_important)[1]
+        else:
+            only_important_articles = only_important
+
         #import pdb; pdb.set_trace()
         #takes out Art. structure
-        #if type(only_important) is not str: import pdb; pdb.set_trace()
-        #without_art_tags = re.sub(r'Art\.?\s?\d\w-?\s?º?','',only_important)
+        if type(only_important) is not str: import pdb; pdb.set_trace()
+        without_art_tags = re.sub(r'\n(a|A)rt\.? ?\d+ ?(º|\xc2\xb0)?','\n',only_important_articles)
 
         #takes out '§ \dº' structure
-        #without_par = re.sub(r'§\s\dº?\s?','',without_art_tags)
+        without_par = re.sub(r'§\s\d(º|\xc2\xb0)?\s?','',without_art_tags)
 
         #takes out the 'IV -' structure
-        #without_rom = re.sub(r'\nI{1,3}|\nIV|\nV|\nVI{1,3}|\nIX|\nX|\nXI{1,3}','',without_par)
+        without_rom = re.sub(r'\nI{1,3}|\nIV|\nV|\nVI{1,3}|\nIX|\nX|\nXI{1,3}','',without_par)
 
         #takes out more items structure
-        #without_items = re.sub(r'(\d\.)+','',without_rom)
+        without_items = re.sub(r'(\d\.)+','',without_rom)
 
         #takes out more items structure
-        #without_items2 = re.sub(r'\n\w\)','',without_items)
+        without_items2 = re.sub(r'\n\w\)','',without_items)
 
         #takes out double spaces
-        without_trash = re.sub(r' +',r' ',only_important)
+        without_double_spaces = re.sub(r' +',r' ',without_items2)
 
         #takes out double line breaks
-        final = re.sub(r'\\n+','\\n',without_trash)
+        without_double_breaks = re.sub(r'\n+','\n\n',without_double_spaces)
+
+        #takes out the ordinal number sign
+        without_ord = re.sub('°','',without_double_breaks)
+
+        #takes out some trash that appeared
+        without_trash = re.sub('\n ','\n',without_ord)
+
+        #takes out more trash
+        final = re.sub('\no ','',without_trash)
+
         #import pdb; pdb.set_trace()
         return final
 
