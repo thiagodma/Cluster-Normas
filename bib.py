@@ -141,7 +141,7 @@ class Data():
         without_art_tags = re.sub(r'\n(a|A)rt\.? ?\d+ ?(º|\xc2\xb0)?','\n',only_important_articles)
 
         #takes out '§ \dº' structure
-        without_par = re.sub(r'§\s\d(º|\xc2\xb0)?\s?','',without_art_tags)
+        without_par = re.sub(r'§ ?\d','',without_art_tags)
 
         #takes out the 'IV -' structure
         without_rom = re.sub(r'\nI{1,3}|\nIV|\nV|\nVI{1,3}|\nIX|\nX|\nXI{1,3}','',without_par)
@@ -167,8 +167,23 @@ class Data():
         #takes out more trash
         final = re.sub('\no ','',without_trash)
 
-        #import pdb; pdb.set_trace()
-        return final
+        #thought it was over?
+        pars = final.split('\n')
+        new_pars = []
+        for par in pars:
+            if not par.isupper() and len(par)>25:
+                new_pars.append(par)
+
+        #now its over
+        real_final = '\n\n'.join(new_pars)
+
+        #not really tho
+        real_final2 = re.sub(r'\n+','\n\n',real_final)
+
+        #takes out a. and a.) structure
+        givup_final = re.sub(r'\n\w\.\)?','',real_final2)
+
+        return real_final2
 
     def get_arts(self, filename:str):
 
