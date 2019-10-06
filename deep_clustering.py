@@ -15,8 +15,8 @@ X = preprocessing.scale(X)
 fi = np.load('fi.npy')
 
 #Incorpora a importância das features
-for i in range(X.shape[1]):
-    X[:,i] = X[:,i]*fi[i]
+#for i in range(X.shape[1]):
+#    X[:,i] = X[:,i]*fi[i]
 
 data = pd.read_csv('Data_cluster_articles_v2.csv',sep='|',encoding='utf-8',index_col=False)
 
@@ -34,7 +34,7 @@ for unique_macrotema in unique_macrotemas:
     #dn = hierarchy.dendrogram(clusters_por_cosseno)
     #plt.savefig('dendogram.jpg')
     #break
-    limite_dissimilaridade = 0.75
+    limite_dissimilaridade = 0.8
     id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
 
     #Colocando o resultado em dataframes
