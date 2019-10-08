@@ -5,7 +5,7 @@ data_clas = load_data('.','data_clas')
 learn_clas = text_classifier_learner(data_clas, AWD_LSTM, drop_mult=0.5, callback_fns=ShowGraph, pretrained=False)
 learn_clas.load('learn_clas_ft')
 
-resolucoes = list(pd.read_csv('Data_cluster_articles.csv',sep='|',encoding='utf-8')['textos'])
+resolucoes = list(pd.read_csv('Data_cluster.csv',sep='|',encoding='utf-8')['textos'])
 
 mbe = learn_clas.model[0]
 
@@ -28,4 +28,4 @@ for resolucao in resolucoes:
     X = np.append(X,sentence_rep,axis=0)
 
 X = np.delete(X, (0), axis=0)
-np.save('X_clas_articles', X)
+np.save('X_clas', X)
