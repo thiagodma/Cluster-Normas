@@ -8,9 +8,9 @@ from sklearn import preprocessing
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
-X = np.load('X_clas_articles_v2.npy')
+X = np.load('X_clas.npy')
 X = preprocessing.scale(X)
-data = pd.read_csv('Data_cluster_articles_v2.csv',sep='|',encoding='utf-8')
+data = pd.read_csv('Data_cluster.csv',sep='|',encoding='utf-8')
 macrotema_por_norma = list(data['macrotemas'])
 
 macrotemas = list(dict.fromkeys(macrotema_por_norma))
