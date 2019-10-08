@@ -183,7 +183,7 @@ class Data():
         #takes out a. and a.) structure
         givup_final = re.sub(r'\n\w\.\)?','',real_final2)
 
-        return real_final2
+        return givup_final
 
     def get_arts(self, filename:str):
 
