@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn import preprocessing
 
-X = np.load('X_clas_articles_v2.npy')
+X = np.load('X_clas.npy')
 
 #Todas as features com média 0 e desvio padrão 1
 X = preprocessing.scale(X)
@@ -15,8 +15,8 @@ X = preprocessing.scale(X)
 fi = np.load('fi.npy')
 
 #Incorpora a importância das features
-#for i in range(X.shape[1]):
-#    X[:,i] = X[:,i]*fi[i]
+for i in range(X.shape[1]):
+    X[:,i] = X[:,i]*fi[i]
 
 data = pd.read_csv('Data_cluster_articles_v2.csv',sep='|',encoding='utf-8',index_col=False)
 
@@ -34,7 +34,7 @@ for unique_macrotema in unique_macrotemas:
     #dn = hierarchy.dendrogram(clusters_por_cosseno)
     #plt.savefig('dendogram.jpg')
     #break
-    limite_dissimilaridade = 0.8
+    limite_dissimilaridade = 0.7
     id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
 
     #Colocando o resultado em dataframes
