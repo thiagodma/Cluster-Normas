@@ -171,7 +171,7 @@ class Data():
         pars = final.split('\n')
         new_pars = []
         for par in pars:
-            if not par.isupper() and len(par)>25:
+            if not par.isupper() and len(par)>50:
                 new_pars.append(par)
 
         #now its over
@@ -183,13 +183,34 @@ class Data():
         #takes out a. and a.) structure
         givup_final = re.sub(r'\n\w\.\)?','',real_final2)
 
+        if givup_final[0:2] == 'o ': givup_final = givup_final[2:]
         return givup_final
 
     def get_arts(self, filename:str):
 
         df = pd.read_csv('Data_cluster.csv', sep='|', encoding='utf-8')
         texts = list(df['textos'])
+        df['textos_tratados'] = list(df.textos)
         for i in range(df.shape[0]):
-            df.iloc[i,3] = self.clean_text_v2(df.iloc[i,3])
+            df.textos_tratados.iloc[i] = self.clean_text_v2(df.textos.iloc[i])
 
         df.to_csv(filename,sep='|',encoding='utf-8',index=False)
+
+    def get_only_articles(self):
+
+        df = pd.read_csv('Data_cluster_articles.csv',sep='|',encoding='utf-8')
+
+        articles = []
+        macrotemas = []
+        nomes_normas = []
+        for i in range(df.shape[0]):
+            for par in df.textos_tratados.iloc[i].split('\n\n'):
+                if not isinstance(par,str): import pdb; pdb.set_trace()
+                articles.append(par)
+                macrotemas.append(df.macrotemas.iloc[i])
+                nomes_normas.append(df.nomes_normas.iloc[i])
+
+        df_out = pd.DataFrame(list(zip(articles,macrotemas,nomes_normas)),
+                 columns=['artigos','macrotemas','nomes_normas'])
+
+        df_out.to_csv('Data_cluster_only_articles.csv',sep='|',encoding='utf-8',index=False)
