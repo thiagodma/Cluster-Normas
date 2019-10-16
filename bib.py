@@ -171,7 +171,7 @@ class Data():
         pars = final.split('\n')
         new_pars = []
         for par in pars:
-            if not par.isupper() and len(par)>25:
+            if not par.isupper() and len(re.sub(r'[^a-zA-Z0-9 ]+','',par))>15:
                 new_pars.append(par)
 
         #now its over

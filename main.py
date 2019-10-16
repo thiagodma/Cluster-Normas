@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #Aqui eu crio uma instancia da classe ClusterNormas
-cn = ClusterNormas()
+cn = ClusterNormas('Data_cluster_only_articles_v3.csv')
 
 #Aqui eu defino as stop words gerais e especificas para esse problema. O atributo stop_words foi definido.
 cn.define_stop_words()
