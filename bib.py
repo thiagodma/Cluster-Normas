@@ -122,7 +122,7 @@ class Data():
         else:
         '''
         #m = re.search(r'(.*)',clean_text, re.DOTALL)
-        without_bye = re.split('entra(rá)? em (V|v)igor na data de sua publicação',clean_text)[0]
+        without_bye = re.split('entra(rá)? em (V|v)igor.*publicação',clean_text)[0]
         only_important = re.split(r'RESOLVE|resolve|Resolve',without_bye)
         if len(only_important)>1: only_important = only_important[1]
         else: only_important = only_important[0]
@@ -171,7 +171,7 @@ class Data():
         pars = final.split('\n')
         new_pars = []
         for par in pars:
-            if not par.isupper() and len(re.sub(r'[^a-zA-Z0-9 ]+','',par))>15:
+            if not par.isupper() and len(re.sub(r'[^a-zA-Z0-9 ]+','',par))>25:
                 new_pars.append(par)
 
         #now its over
@@ -185,11 +185,65 @@ class Data():
 
         return givup_final
 
-    def get_arts(self, filename:str):
+    def only_arts(self,text):
+
+        clean_text = []
+        for par in text.split('\n'):
+            clean_par = []
+            for word in par.split():
+                clean_word = unicodedata.normalize('NFKD', word)
+                clean_par.append(clean_word)
+            clean_text.append(' '.join(clean_par))
+        clean_text = '\n'.join(clean_text)
+
+        #finds the articles section
+        article_tags = re.findall(r'(\n *Art. *(\d+|l))',clean_text)
+        articles = [article_tag[0] for article_tag in article_tags]
+
+        out_text = ''
+        if len(articles) >=2:
+            for article in articles:
+                aux1 = re.split(article,clean_text)[1]
+                aux2 = re.split('\n',aux1)[0]
+                if len(re.split('entra(rá)? em (V|v)igor',aux2))!=1:
+                    out_text = out_text + '\n\n'
+                    break
+                out_text = out_text+ aux2 + '\n\n'
+
+        else:
+            return 'norma fora de padrao'
+
+        while out_text[-1] == '\n': out_text = out_text[:-1]
+
+        #if len(articles) >=2: import pdb; pdb.set_trace()
+        return out_text
+
+    def get_arts(self):
 
         df = pd.read_csv('Data_cluster.csv', sep='|', encoding='utf-8')
         texts = list(df['textos'])
         for i in range(df.shape[0]):
-            df.iloc[i,3] = self.clean_text_v2(df.iloc[i,3])
+            df.iloc[i,3] = self.only_arts(df.iloc[i,3])
 
-        df.to_csv(filename,sep='|',encoding='utf-8',index=False)
+        return df
+        #df.to_csv(filename,sep='|',encoding='utf-8',index=False)
+
+    def get_only_articles(self,filename:str):
+
+        #df = pd.read_csv('Data_cluster_articles.csv',sep='|',encoding='utf-8')
+        df = self.get_arts()
+        #import pdb; pdb.set_trace()
+        articles = []
+        macrotemas = []
+        nomes_normas = []
+        for i in range(df.shape[0]):
+            for par in df.textos.iloc[i].split('\n\n'):
+                if not isinstance(par,str): import pdb; pdb.set_trace()
+                articles.append(par)
+                macrotemas.append(df.macrotemas.iloc[i])
+                nomes_normas.append(df.nomes_normas.iloc[i])
+
+        df_out = pd.DataFrame(list(zip(articles,macrotemas,nomes_normas)),
+                 columns=['artigos','macrotemas','nomes_normas'])
+
+        df_out.to_csv(filename,sep='|',encoding='utf-8',index=False)
