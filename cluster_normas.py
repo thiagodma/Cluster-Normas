@@ -34,17 +34,17 @@ class ClusterNormas(ClassicClustering):
         info_cluster.to_csv('info_cluster.csv', sep='|',index=False, encoding='utf-8')
         textos_por_cluster.to_csv('textos_por_cluster.csv', sep='|',index=False, encoding='utf-8')
 
-        return textos_por_cluster
+        return textos_por_cluster,info_cluster
 
-    def freq_words_cluster(self, cluster_id:int, textos_por_cluster:df, qtd:int):
+    def freq_words_cluster(self, cluster_id:int, textos_por_cluster, qtd:int):
 
         artigos_tratados = list((textos_por_cluster[textos_por_cluster.cluster_id==cluster_id]).textos_tratados)
         all_words = ''
         for i in range(len(artigos_tratados)):
             all_words = all_words + artigos_tratados[i] + ' '
 
-        Counter = Counter(all_words)
-        most_occur = Counter.most_common(qtd)
+        counter = Counter(all_words)
+        most_occur = counter.most_common(qtd)
 
         out = [item [0] for item in most_occur]
 
