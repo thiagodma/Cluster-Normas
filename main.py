@@ -10,10 +10,14 @@ import numpy as np
 cn = ClusterNormas('Data_cluster_only_articles_v4.csv')
 
 #Aqui eu defino as stop words gerais e especificas para esse problema. O atributo stop_words foi definido.
-cn.define_stop_words(['dispositivos','regulamento','tecnico','aprovar','denominacao','interessado','interessada','resolucao','diretoria',
-                      'colegiada','portaria','instrucao','normativa','rdc','anvisa','decreto','janeiro','fevereiro','marco','abril',
-                      'maio','junho','julho','agosto','setembro','outubro','novembro','dezembro','ficam','anexo','artigo','desta','lei',
-                      'anvs','agencia','nacional','vigilancia','sanitaria','determinar'])
+cn.define_stop_words(['dispositivos','regulamento','tecnico','aprovar',
+                      'denominacao','interessado','interessada','resolucao','diretoria',
+                      'colegiada','portaria','instrucao','normativa','rdc',
+                      'anvisa','decreto','janeiro','fevereiro','marco','abril',
+                      'maio','junho','julho','agosto','setembro','outubro',
+                      'novembro','dezembro','ficam','anexo','artigo','desta','lei',
+                      'anvs','agencia','nacional','vigilancia','sanitaria','determinar',
+                      'diario','oficial','uniao',])
 
 #Aqui eu carrego os atributos resolucoes, resolucoes_tratadas e nome_arquivos.
 cn.importa_textos()
@@ -25,7 +29,7 @@ cn.importa_textos()
 base_tfidf = cn.vec_tfidf(stem=False)
 
 #Reduzindo a dimensionalidade
-base_tfidf_reduced = cn.SVD(base_tfidf,dim=700)
+base_tfidf_reduced = cn.SVD(base_tfidf,dim=900)
 
 #Clustering
 print('Começou a clusterização.')
