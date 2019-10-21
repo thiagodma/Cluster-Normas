@@ -27,13 +27,13 @@ class ClusterNormas(ClassicClustering):
 
         return textos_por_cluster
 
-    def freq_words_cluster(self, artigos_tratados):
+    def freq_words_cluster(self, artigos_tratados,qtd:int):
 
         all_words = ''
         for i in range(len(artigos_tratados)):
             all_words = all_words + artigos_tratados[i] + ' '
 
         Counter = Counter(all_words)
-        most_occur = Counter.most_common(3)
+        most_occur = Counter.most_common(qtd)
 
-        return most_occur 
+        return most_occur
