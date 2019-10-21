@@ -303,7 +303,7 @@ class ClassicClustering():
         print('Tempo para fazer a redução de dimensionalidade: ' + str(elpsd) + '\n')
         return base_tfidf_reduced
 
-    def generate_wordcloud(self, cluster:int, filename:str):
+    def generate_wordcloud(self, cluster:int, filename):
         '''
         Gera uma nuvem de palavras de uma cluster com identificador 'cluster_id'.
 
@@ -318,8 +318,10 @@ class ClassicClustering():
 
         Obs: Se você não modificou o formato dos csvs não é necessário modificar esse método.
         '''
+        if isinstance(filename,str): df = pd.read_csv(filename,sep='|')
+        else: df = filename
 
-        df = pd.read_csv(filename,sep='|')
+
         df_cluster = df[df['cluster_id'] == cluster]
 
         textos_da_cluster = list(df_cluster['textos_tratados'])
