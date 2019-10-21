@@ -46,7 +46,7 @@ print('Tempo para fazer a clusterização: ' + str(elpsd) + '\n')
 
 cluster_n_textos = cn.analisa_clusters(base_tfidf_reduced, id_clusters)
 
-textos_por_cluster = cn.generate_csvs(cluster_n_textos, id_clusters)
+textos_por_cluster,info_cluster = cn.generate_csvs(cluster_n_textos, id_clusters)
 
 #Exporta as tabelas
 #Z.to_csv('cluster_normas_cosseno.csv', sep='|',index=False, encoding='utf-8')
