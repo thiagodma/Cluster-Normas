@@ -1,4 +1,5 @@
 from classic_clustering import *
+from collections import Counter
 
 class ClusterNormas(ClassicClustering):
 
@@ -25,3 +26,14 @@ class ClusterNormas(ClassicClustering):
                                           columns=['normas','cluster_id','textos','textos_tratados'])
 
         return textos_por_cluster
+
+    def freq_words_cluster(self, artigos_tratados):
+
+        all_words = ''
+        for i in range(len(artigos_tratados)):
+            all_words = all_words + artigos_tratados[i] + ' '
+
+        Counter = Counter(all_words)
+        most_occur = Counter.most_common(3)
+
+        return most_occur 
