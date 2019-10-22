@@ -39,13 +39,15 @@ class ClusterNormas(ClassicClustering):
     def freq_words_cluster(self, cluster_id:int, textos_por_cluster, qtd:int):
 
         artigos_tratados = list((textos_por_cluster[textos_por_cluster.cluster_id==cluster_id]).textos_tratados)
-        all_words = ''
-        for i in range(len(artigos_tratados)):
-            all_words = all_words + artigos_tratados[i] + ' '
+
+        all_words = []
+        for artigo in artigos_tratados:
+            for palavra in re.split(' ',artigo):
+                if palavra is not '': all_words.append(palavra)
 
         counter = Counter(all_words)
         most_occur = counter.most_common(qtd)
-
-        out = [item [0] for item in most_occur]
+        import pdb; pdb.set_trace()
+        out = [item[0] for item in most_occur]
 
         return ' '.join(out)
