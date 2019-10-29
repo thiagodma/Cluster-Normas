@@ -7,10 +7,15 @@ import pandas as pd
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import TruncatedSVD
+
 
 X = np.load('X_clas.npy')
 X = preprocessing.scale(X)
+svd = TruncatedSVD(n_components=200,random_state=42)
+X = svd.fit_transform(X)
 data = pd.read_csv('Data_cluster.csv',sep='|',encoding='utf-8')
+
 macrotema_por_norma = list(data['macrotemas'])
 
 macrotemas = list(dict.fromkeys(macrotema_por_norma))
@@ -33,4 +38,4 @@ clf = RandomForestClassifier(n_estimators=200,max_depth=200, random_state=42)
 clf.fit(X_train,y_train)
 print(clf.score(X_valid,y_valid))
 fi = clf.feature_importances_
-np.save('fi', fi)
+np.save('fif', fi)
