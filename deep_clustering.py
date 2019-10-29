@@ -18,7 +18,7 @@ fi = np.load('fi.npy')
 for i in range(X.shape[1]):
     X[:,i] = X[:,i]*fi[i]
 
-data = pd.read_csv('Data_cluster_articles_v2.csv',sep='|',encoding='utf-8',index_col=False)
+data = pd.read_csv('Data_cluster.csv',sep='|',encoding='utf-8',index_col=False)
 
 macrotemas = list(data['macrotemas'])
 unique_macrotemas = list(dict.fromkeys(macrotemas))
@@ -30,9 +30,8 @@ for unique_macrotema in unique_macrotemas:
     X_macrotema = X[idx]
     #Clustering
     clusters_por_cosseno = hierarchy.linkage(X_macrotema,"average", metric="cosine",optimal_ordering=True)
-    #plt.figure()
-    #dn = hierarchy.dendrogram(clusters_por_cosseno)
-    #plt.savefig('dendogram.jpg')
+    plt.figure()
+    dn = hierarchy.dendrogram(clusters_por_cosseno)
     #break
     limite_dissimilaridade = 0.7
     id_clusters = hierarchy.fcluster(clusters_por_cosseno, limite_dissimilaridade, criterion="distance")
